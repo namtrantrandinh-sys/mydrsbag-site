@@ -1,0 +1,2270 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Dr's Bag — PBS Doctor's Bag dispensed &amp; delivered free to your clinic</title>
+<meta name="description" content="Photograph your PBS prescriber bag script, upload it, and a Direct Chemist Outlet pharmacy dispenses and delivers it free to your clinic — anywhere in Australia.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   MY DR'S BAG — design tokens
+   "Dispensing label" system in Direct Chemist Outlet brand:
+   DCO red for action, DCO royal blue for trust, label-white
+   cards on cool paper, mono data type.
+   ============================================================ */
+:root{
+  --gauze:#EEF1F7;          /* page field */
+  --gauze-deep:#E2E7F1;     /* alt band */
+  --label:#FFFFFF;          /* card / label white */
+  --ink:#0F1E45;            /* near-black green ink */
+  --ink-soft:#47547A;       /* secondary text */
+  --sun:#FFC907;            /* DCO yellow — action */
+  --sun-deep:#E8B400;
+  --sun-soft:#FFF1BF;
+  --navy:#1B3C87;           /* DCO royal blue — trust/affirm */
+  --navy-deep:#152C66;
+  --mint:#E4EAF8;           /* tint chips */
+  --recall:#B31E24;         /* signal red — used sparingly */
+  --line:#C7D0E2;           /* rules on gauze */
+  --line-label:#E4E9F3;     /* rules on white */
+  --stamp:#1B3C87;
+
+  --font-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --font-body:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --font-mono:ui-monospace,"SF Mono","IBM Plex Mono",Menlo,Consolas,monospace;
+
+  --r-card:22px;
+  --r-chip:999px;
+  --shadow-label:0 2px 6px rgba(15,30,69,.05),0 18px 44px -18px rgba(15,30,69,.22);
+  --shadow-pop:0 24px 60px -18px rgba(15,30,69,.30);
+  --wrap:1140px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-body);
+  letter-spacing:-.011em;
+  background:var(--gauze);
+  color:var(--ink);
+  line-height:1.6;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--navy);color:#fff}
+img{max-width:100%;display:block}
+a{color:inherit}
+button{font-family:inherit;cursor:pointer}
+
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 24px}
+
+/* ---------- type roles ---------- */
+.display{
+  font-family:var(--font-display);
+  
+  font-weight:700;
+  letter-spacing:-.03em;
+  line-height:1.04;
+}
+.eyebrow{
+  font-family:var(--font-mono);
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--navy-deep);
+  display:inline-flex;align-items:center;gap:10px;
+}
+.eyebrow::before{content:"";width:22px;height:2px;background:var(--sun);border-radius:2px}
+.mono{font-family:var(--font-mono)}
+.lede{font-size:18px;color:var(--ink-soft);max-width:56ch}
+
+/* ---------- ticker ---------- */
+.ticker{
+  background:var(--ink);color:#E8EDF9;
+  font-family:var(--font-mono);font-size:11.5px;letter-spacing:.12em;
+  overflow:hidden;white-space:nowrap;position:relative;
+}
+.ticker-track{display:inline-flex;gap:56px;padding:9px 0;animation:tick 34s linear infinite;will-change:transform}
+.ticker-track span{display:inline-flex;align-items:center;gap:10px}
+.ticker-track b{color:#FFD84D;font-weight:500}
+@keyframes tick{to{transform:translateX(-50%)}}
+.ticker:hover .ticker-track,.tape-wrap:hover .tape{animation-play-state:paused}
+
+/* ---------- nav ---------- */
+header.nav{
+  position:sticky;top:0;z-index:60;
+  background:rgba(237,242,238,.88);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:66px;gap:24px}
+.brand{display:flex;align-items:center;gap:11px;text-decoration:none}
+.brand-mark{
+  width:34px;height:34px;border-radius:9px;background:var(--navy);
+  display:grid;place-items:center;flex:none;
+}
+.brand-mark svg{width:19px;height:19px}
+.brand-name{font-family:var(--font-display);font-weight:700;font-size:18px;letter-spacing:-.01em}
+.brand-name small{display:block;font-family:var(--font-mono);font-weight:500;font-size:9.5px;letter-spacing:.16em;color:var(--ink-soft);margin-top:1px}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{text-decoration:none;font-size:14.5px;font-weight:600;color:var(--ink-soft);transition:color .15s}
+.nav-links a:hover{color:var(--navy-deep)}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  font-weight:700;font-size:15px;text-decoration:none;border:none;
+  border-radius:11px;padding:13px 22px;transition:transform .12s,box-shadow .12s,background .15s;
+}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--sun);color:var(--navy-deep);box-shadow:0 8px 20px -8px rgba(232,180,0,.55)}
+.btn-primary:hover{background:var(--sun-deep);transform:translateY(-2px);box-shadow:0 14px 28px -10px rgba(232,180,0,.6)}
+.btn-ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line);}
+.btn-ghost:hover{border-color:var(--navy);color:var(--navy-deep)}
+.btn-sm{padding:10px 16px;font-size:13.5px;border-radius:9px}
+.nav-cta{flex:none}
+
+/* ---------- hero ---------- */
+.hero{padding:72px 0 84px;position:relative;overflow:hidden}
+.hero-grid>div:first-child>*{opacity:0;transform:translateY(16px);animation:heroUp .65s cubic-bezier(.2,.7,.3,1) forwards}
+.hero-grid>div:first-child>*:nth-child(1){animation-delay:.05s}
+.hero-grid>div:first-child>*:nth-child(2){animation-delay:.16s}
+.hero-grid>div:first-child>*:nth-child(3){animation-delay:.27s}
+.hero-grid>div:first-child>*:nth-child(4){animation-delay:.38s}
+.hero-grid>div:first-child>*:nth-child(5){animation-delay:.49s}
+.script-stage{opacity:0;animation:cardIn .8s cubic-bezier(.2,.8,.3,1) .4s forwards}
+@keyframes heroUp{to{opacity:1;transform:none}}
+@keyframes cardIn{from{opacity:0;transform:translateY(26px) scale(.965)}to{opacity:1;transform:none}}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+.hero h1{font-size:clamp(38px,5.2vw,58px);margin:18px 0 20px}
+.hero h1 .free{color:var(--navy);position:relative;white-space:nowrap}
+.hero h1 .free::after{
+  content:"";position:absolute;left:-3px;right:-3px;bottom:4px;height:15px;
+  background:#FFD84D;z-index:-1;border-radius:4px;transform:rotate(-.6deg);
+}
+.hero .lede{margin-bottom:30px}
+.hero-ctas{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:34px}
+.chips{display:flex;flex-wrap:wrap;gap:9px}
+.chip{
+  font-family:var(--font-mono);font-size:11.5px;font-weight:500;letter-spacing:.05em;
+  background:var(--label);border:1px solid var(--line);border-radius:var(--r-chip);
+  padding:7px 13px;color:var(--ink-soft);display:inline-flex;align-items:center;gap:7px;
+}
+.chip i{width:6px;height:6px;border-radius:50%;background:var(--sun);flex:none}
+
+/* ---------- the script card (signature) ---------- */
+.script-stage{position:relative;perspective:1200px}
+.script{
+  transition:transform .35s cubic-bezier(.2,.8,.3,1);will-change:transform;
+  background:var(--label);border-radius:var(--r-card);
+  box-shadow:var(--shadow-pop);
+  transform:rotate(1.2deg);
+  position:relative;overflow:hidden;
+  border:1px solid #fff;
+  max-width:430px;margin-left:auto;
+}
+.script::before{ /* brand label bar */
+  content:"";display:block;height:7px;
+  background:linear-gradient(90deg,var(--navy) 0 72%,var(--sun) 72%);
+}
+.script-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:16px 22px 14px;border-bottom:1.5px dashed var(--line-label);
+}
+.script-head .t{font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.13em;color:var(--navy-deep)}
+.script-head .n{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft)}
+.script-clinic{padding:14px 22px;border-bottom:1px solid var(--line-label);font-family:var(--font-mono);font-size:12px;line-height:1.75;color:var(--ink-soft)}
+.script-clinic b{color:var(--ink);font-weight:600}
+.script-items{padding:8px 22px 14px;position:relative}
+.s-item{
+  display:flex;align-items:center;gap:12px;padding:9px 0;
+  border-bottom:1px solid var(--line-label);font-size:13.5px;
+  opacity:0;transform:translateX(-8px);
+  animation:itemIn .5s cubic-bezier(.2,.7,.3,1) forwards;
+}
+.s-item:last-child{border-bottom:none}
+.s-item:nth-child(2){animation-delay:.55s}.s-item:nth-child(3){animation-delay:1.05s}
+.s-item:nth-child(4){animation-delay:1.55s}.s-item:nth-child(5){animation-delay:2.05s}
+.s-check path{stroke-dasharray:26;stroke-dashoffset:26;animation:draw .45s ease forwards}
+.s-item:nth-child(2) .s-check path{animation-delay:.75s}
+.s-item:nth-child(3) .s-check path{animation-delay:1.25s}
+.s-item:nth-child(4) .s-check path{animation-delay:1.75s}
+.s-item:nth-child(5) .s-check path{animation-delay:2.25s}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes itemIn{to{opacity:1;transform:none}}
+.s-check{
+  width:19px;height:19px;border-radius:6px;background:var(--mint);
+  display:grid;place-items:center;flex:none;color:var(--navy);
+}
+.s-check svg{width:11px;height:11px}
+.s-name{font-weight:600;flex:1}
+.s-qty{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft)}
+.scanline{
+  position:absolute;left:0;right:0;top:0;height:52px;pointer-events:none;
+  background:linear-gradient(to bottom,rgba(255,201,7,0),rgba(255,201,7,.10) 55%,rgba(255,201,7,.22) 98%,rgba(255,201,7,0));
+  mix-blend-mode:multiply;
+  animation:scan 3s ease-in-out .3s infinite alternate;
+}
+@keyframes scan{from{transform:translateY(-10%)}to{transform:translateY(230%)}}
+.script-foot{
+  background:var(--gauze);border-top:1.5px dashed var(--line);
+  padding:15px 22px;display:flex;justify-content:space-between;align-items:center;gap:14px;
+}
+.stamp{
+  font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.11em;
+  color:var(--stamp);border:2px solid var(--stamp);border-radius:7px;
+  padding:6px 12px;transform:rotate(-3deg);text-transform:uppercase;
+  transition:opacity .3s;white-space:nowrap;
+}
+.stamp.pop{animation:thump .4s cubic-bezier(.2,1.4,.4,1)}
+@keyframes thump{from{transform:rotate(-3deg) scale(1.3)}to{transform:rotate(-3deg) scale(1)}}
+.script-foot .cost{text-align:right}
+.script-foot .cost b{font-family:var(--font-display);font-size:21px;color:var(--ink);display:block;line-height:1}
+.script-foot .cost span{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--ink-soft)}
+.float-tag{
+  position:absolute;z-index:6;background:var(--ink);color:#DCE5F8;border-radius:10px;
+  font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;
+  padding:9px 14px;box-shadow:var(--shadow-pop);display:flex;gap:9px;align-items:center;
+}
+.float-tag i{width:7px;height:7px;border-radius:50%;background:#FFD84D;animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.tag-1{top:-18px;right:-8px;transform:rotate(2deg)}
+.tag-2{bottom:-16px;left:-14px;transform:rotate(-1.5deg)}
+
+/* ---------- section scaffolding ---------- */
+section{padding:88px 0}
+.sec-head{max-width:640px;margin-bottom:52px}
+.sec-head h2{font-size:clamp(29px,3.6vw,40px);margin:16px 0 14px}
+.band{background:var(--gauze-deep)}
+.band-ink{background:var(--ink);color:#E9EEF9}
+.band-ink .eyebrow{color:#9DB4F0}
+.band-ink .eyebrow::before{background:#FFD84D}
+.band-ink .lede{color:#A9B6D6}
+
+/* ---------- wizard ---------- */
+.wizard{
+  background:var(--label);border-radius:18px;box-shadow:var(--shadow-label);
+  overflow:hidden;border:1px solid #fff;
+}
+.wiz-rail{
+  display:flex;border-bottom:1px solid var(--line-label);
+  font-family:var(--font-mono);font-size:12px;letter-spacing:.08em;
+}
+.wiz-rail .rail-step{
+  flex:1;padding:15px 18px;display:flex;align-items:center;gap:10px;
+  color:var(--ink-soft);border-right:1px solid var(--line-label);
+  background:var(--gauze);transition:background .25s,color .25s;
+}
+.wiz-rail .rail-step:last-child{border-right:none}
+.rail-num{
+  width:22px;height:22px;border-radius:7px;display:grid;place-items:center;
+  border:1.5px solid var(--line);font-weight:600;font-size:11px;flex:none;
+  transition:all .25s;background:var(--label);
+}
+.rail-step.active{background:var(--label);color:var(--ink)}
+.rail-step.active .rail-num{background:var(--sun);border-color:var(--sun);color:var(--navy-deep)}
+.rail-step.done .rail-num{background:var(--mint);border-color:var(--mint);color:var(--navy)}
+.wiz-body{padding:40px;min-height:340px}
+.wiz-pane{display:none;animation:paneIn .35s ease}
+.wiz-pane.on{display:block}
+@keyframes paneIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.wiz-pane h3{font-family:var(--font-display);font-weight:700;font-size:23px;letter-spacing:-.015em;margin-bottom:8px}
+.wiz-pane .hint{color:var(--ink-soft);font-size:15px;margin-bottom:26px;max-width:52ch}
+.field label{display:block;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px}
+.field input,.field select{
+  width:100%;border:1.5px solid var(--line);border-radius:11px;background:var(--gauze);
+  font-family:var(--font-body);font-size:16px;padding:14px 16px;color:var(--ink);
+  transition:border-color .15s,background .15s;outline:none;
+}
+.field input:focus,.field select:focus{border-color:var(--navy);background:#fff}
+.field{margin-bottom:20px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.route-result{
+  margin-top:6px;border:1.5px solid var(--mint);background:var(--mint);
+  border-radius:12px;padding:18px 20px;display:none;gap:16px;align-items:flex-start;
+}
+.route-result.on{display:flex}
+.route-ico{width:38px;height:38px;border-radius:10px;background:var(--label);display:grid;place-items:center;flex:none;color:var(--navy-deep)}
+.route-ico svg{width:19px;height:19px}
+.route-result b{display:block;font-size:15.5px}
+.route-result p{font-size:13.5px;color:var(--ink-soft);margin-top:3px}
+.route-result .mono-line{font-family:var(--font-mono);font-size:11.5px;color:var(--navy-deep);margin-top:7px;letter-spacing:.04em}
+.drop{
+  border:2px dashed var(--line);border-radius:14px;background:var(--gauze);
+  padding:44px 24px;text-align:center;transition:all .2s;cursor:pointer;
+}
+.drop.dragover{border-color:var(--sun);background:var(--mint)}
+.drop-ico{width:52px;height:52px;border-radius:14px;background:var(--sun-soft);display:grid;place-items:center;margin:0 auto 16px;color:var(--navy-deep)}
+.drop-ico svg{width:25px;height:25px}
+.drop b{font-size:16px}
+.drop p{font-size:13.5px;color:var(--ink-soft);margin-top:5px}
+.drop input{display:none}
+.file-chip{
+  display:none;align-items:center;gap:13px;margin-top:18px;
+  background:var(--gauze);border:1px solid var(--line);border-radius:12px;padding:13px 16px;
+}
+.file-chip.on{display:flex}
+.file-chip img{width:46px;height:46px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.file-chip .fn{font-family:var(--font-mono);font-size:12.5px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-chip .fx{background:none;border:none;color:var(--recall);font-weight:700;font-size:13px}
+.wiz-foot{display:flex;justify-content:space-between;align-items:center;margin-top:30px;gap:14px}
+.wiz-note{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.06em;color:var(--ink-soft);max-width:40ch}
+.success{text-align:center;padding:14px 0}
+.success .stamp{display:inline-block;font-size:13px;margin-bottom:22px;animation:stampIn .45s cubic-bezier(.2,1.4,.4,1)}
+@keyframes stampIn{from{transform:rotate(-3deg) scale(1.6);opacity:0}to{transform:rotate(-3deg) scale(1);opacity:1}}
+.success h3{font-size:27px !important}
+.ref{
+  font-family:var(--font-mono);font-size:15px;font-weight:600;letter-spacing:.1em;
+  background:var(--gauze);border:1.5px dashed var(--line);border-radius:10px;
+  display:inline-block;padding:11px 20px;margin:16px 0 26px;
+}
+.timeline{display:flex;justify-content:center;gap:0;max-width:520px;margin:0 auto;text-align:left}
+.tl-step{flex:1;position:relative;padding-top:26px}
+.tl-step::before{content:"";position:absolute;top:7px;left:0;right:0;height:2px;background:var(--line)}
+.tl-step::after{
+  content:"";position:absolute;top:2px;left:0;width:12px;height:12px;border-radius:50%;
+  background:var(--label);border:2.5px solid var(--line);
+}
+.tl-step.hit::before{background:var(--navy)}
+.tl-step.hit::after{border-color:var(--navy);background:var(--navy)}
+.tl-step b{font-size:12.5px;display:block}
+.tl-step span{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-soft)}
+
+/* ---------- how it works ---------- */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;counter-reset:step}
+.step-card{
+  background:var(--label);border-radius:var(--r-card);box-shadow:var(--shadow-label);
+  padding:30px 28px;position:relative;counter-increment:step;border-top:4px solid var(--sun);
+}
+.step-card::before{
+  content:"0" counter(step);
+  font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.14em;
+  color:var(--navy-deep);background:var(--mint);border-radius:7px;padding:5px 10px;
+  display:inline-block;margin-bottom:18px;
+}
+.step-card h3{font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:-.01em;margin-bottom:9px}
+.step-card p{font-size:14.5px;color:var(--ink-soft)}
+.step-card .also{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line-label);font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);letter-spacing:.03em}
+
+/* ---------- coverage ---------- */
+.cover-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.ph-card{
+  background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);
+  border-radius:var(--r-card);padding:26px 24px;transition:border-color .2s,transform .2s;
+}
+.ph-card:hover{border-color:#FFD84D;transform:translateY(-3px)}
+.ph-card .loc{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;color:#9DB4F0;text-transform:uppercase}
+.ph-card h3{font-family:var(--font-display);font-weight:700;font-size:19px;margin:10px 0 8px;letter-spacing:-.01em;color:#fff}
+.ph-card p{font-size:13px;color:#A9B6D6;line-height:1.7}
+.ph-card .mono-line{font-family:var(--font-mono);font-size:11.5px;color:#9DB4F0;margin-top:13px;letter-spacing:.03em;line-height:1.8}
+.ph-card a{color:#9DB4F0;text-decoration:none}
+.ph-card a:hover{text-decoration:underline}
+.ph-card.national{background:rgba(255,216,77,.1);border-color:rgba(255,216,77,.35)}
+.deliv-note{
+  margin-top:26px;display:flex;gap:26px;flex-wrap:wrap;
+  font-family:var(--font-mono);font-size:11.5px;letter-spacing:.05em;color:#A9B6D6;
+}
+.deliv-note b{color:#FFD84D;font-weight:600}
+
+/* ---------- medication tape ---------- */
+.tape-wrap{overflow:hidden;position:relative;margin-top:8px;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);}
+.tape{display:inline-flex;gap:14px;animation:tick 46s linear infinite;padding:6px 0;white-space:nowrap}
+.med{
+  font-family:var(--font-mono);font-size:12.5px;letter-spacing:.02em;
+  background:var(--label);border:1px solid var(--line);border-radius:10px;
+  padding:11px 16px;display:inline-flex;gap:10px;align-items:center;box-shadow:0 1px 2px rgba(15,30,69,.05);
+}
+.med i{width:8px;height:8px;border-radius:3px;background:var(--mint);border:1.5px solid var(--sun);flex:none}
+.med span{color:var(--ink-soft)}
+.tape-cta{margin-top:30px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.tape-cta .fine{font-size:13px;color:var(--ink-soft)}
+
+/* ---------- FAQ ---------- */
+.faq-list{max-width:780px}
+details{
+  background:var(--label);border-radius:12px;box-shadow:var(--shadow-label);
+  margin-bottom:12px;overflow:hidden;border:1px solid #fff;
+}
+summary{
+  list-style:none;display:flex;justify-content:space-between;align-items:center;gap:20px;
+  padding:20px 24px;font-weight:700;font-size:16px;cursor:pointer;
+}
+summary::-webkit-details-marker{display:none}
+summary .plus{
+  width:26px;height:26px;border-radius:8px;background:var(--gauze);flex:none;
+  display:grid;place-items:center;font-family:var(--font-mono);font-weight:500;
+  transition:transform .25s,background .2s;color:var(--navy-deep);
+}
+details[open] summary .plus{transform:rotate(45deg);background:var(--mint)}
+.faq-a{padding:0 24px 22px;color:var(--ink-soft);font-size:15px;max-width:64ch}
+
+/* ---------- contact / footer ---------- */
+.contact-band{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+.contact-card{
+  background:var(--label);border-radius:var(--r-card);box-shadow:var(--shadow-label);
+  padding:30px;border:1px solid #fff;
+}
+.contact-card .row{display:flex;gap:14px;padding:13px 0;border-bottom:1px dashed var(--line-label);align-items:center}
+.contact-card .row:last-child{border-bottom:none}
+.contact-card .row svg{width:18px;height:18px;color:var(--navy);flex:none}
+.contact-card .row b{font-size:14.5px;display:block}
+.contact-card .row span{font-family:var(--font-mono);font-size:12.5px;color:var(--ink-soft)}
+footer{background:var(--ink);color:#A9B6D6;padding:56px 0 40px;font-size:13.5px}
+.foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:44px;margin-bottom:44px}
+.foot-grid h4{font-family:var(--font-mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#9DB4F0;margin-bottom:16px;font-weight:600}
+.foot-grid ul{list-style:none}
+.foot-grid li{margin-bottom:10px}
+.foot-grid a{color:#CBD6EF;text-decoration:none}
+.foot-grid a:hover{color:#fff;text-decoration:underline}
+.foot-legal{border-top:1px solid rgba(255,255,255,.12);padding-top:26px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font-family:var(--font-mono);font-size:11px;letter-spacing:.05em}
+
+/* ---------- sticky mobile CTA ---------- */
+.mob-cta{
+  position:fixed;left:14px;right:14px;bottom:14px;z-index:70;display:none;
+}
+.mob-cta .btn{width:100%;box-shadow:var(--shadow-pop)}
+
+/* ---------- reveal ---------- */
+.rv{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.rv.in{opacity:1;transform:none}
+.steps .step-card:nth-child(2){transition-delay:.1s}.steps .step-card:nth-child(3){transition-delay:.2s}
+.cover-grid .ph-card:nth-child(2){transition-delay:.08s}.cover-grid .ph-card:nth-child(3){transition-delay:.16s}.cover-grid .ph-card:nth-child(4){transition-delay:.24s}
+
+
+/* ---------- hero ambience ---------- */
+.hero{isolation:isolate}
+.hero-bg{position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.bg-cross{position:absolute;width:340px;height:340px;opacity:.55;animation:drift 16s ease-in-out infinite alternate}
+.bg-cross::before,.bg-cross::after{content:"";position:absolute;background:var(--sun-soft);border-radius:40px}
+.bg-cross::before{left:50%;top:0;width:38%;height:100%;transform:translateX(-50%)}
+.bg-cross::after{top:50%;left:0;height:38%;width:100%;transform:translateY(-50%)}
+.cross-a{top:-90px;right:-50px;transform:rotate(12deg)}
+.cross-b{bottom:-150px;left:-120px;width:430px;height:430px;opacity:.4;animation-delay:-8s}
+@keyframes drift{to{transform:translateY(28px) rotate(17deg)}}
+
+/* ---------- delivery van ---------- */
+.van-track{position:relative;margin-top:36px;height:52px;max-width:430px;margin-left:auto;overflow:hidden}
+.van-track::before{content:"";position:absolute;left:0;right:0;bottom:13px;border-bottom:2.5px dashed var(--line)}
+.van{position:absolute;bottom:8px;left:0;width:68px;animation:drive 8s linear infinite}
+.van .wheel{transform-box:fill-box;transform-origin:center;animation:wheelspin 1s linear infinite}
+@keyframes drive{0%{transform:translate(-90px,0)}20%{transform:translate(24px,-1.6px)}40%{transform:translate(138px,.6px)}60%{transform:translate(252px,-1.6px)}80%{transform:translate(366px,.6px)}100%{transform:translate(480px,0)}}
+@keyframes wheelspin{to{transform:rotate(360deg)}}
+
+/* ---------- bulk meter ---------- */
+.bulk-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+.parcel-card{background:var(--label);border-radius:18px;box-shadow:var(--shadow-label);border:1px solid #fff;padding:32px}
+.parcel-card .pc-label{font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.13em;color:var(--ink-soft);margin-bottom:18px}
+.parcel{position:relative;background:var(--gauze);border:2px solid var(--line);border-radius:14px;height:158px;display:flex;align-items:flex-end;justify-content:center;gap:9px;padding:16px 16px 14px;overflow:hidden}
+.parcel::before{content:"MEDICAL — KEEP UPRIGHT";position:absolute;top:10px;left:14px;font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:var(--ink-soft)}
+.parcel::after{content:"";position:absolute;top:0;left:50%;width:36px;height:100%;transform:translateX(-50%);background:var(--sun-soft);opacity:.75}
+.vial{width:27px;height:66px;border-radius:8px 8px 4px 4px;background:linear-gradient(#fff,#E7ECF8);border:1.5px solid var(--line);position:relative;z-index:1;opacity:.16;transform:translateY(10px);transition:opacity .3s,transform .3s}
+.vial::before{content:"";position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:15px;height:8px;border-radius:3px 3px 0 0;background:var(--navy)}
+.vial::after{content:"";position:absolute;left:4px;right:4px;top:19px;height:17px;background:var(--sun-soft);border-radius:3px}
+.vial.on{opacity:1;transform:none}
+.bulk-slider{width:100%;margin:24px 0 16px;accent-color:var(--navy);cursor:pointer}
+.bulk-read{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.bulk-count{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.08em;color:var(--ink-soft)}
+.bulk-count b{font-family:var(--font-display);font-size:32px;color:var(--ink);margin-right:8px;vertical-align:-3px}
+.verdict{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.09em;border-radius:9px;padding:9px 14px;border:1.5px solid transparent;transition:all .2s}
+.verdict.bad{background:#FBEDED;color:var(--recall);border-color:#F0C6C6}
+.verdict.good{background:var(--sun-soft);color:var(--navy-deep);border-color:#F0D583}
+.postage-line{margin-top:20px;padding-top:16px;border-top:1px dashed var(--line-label);font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;color:var(--ink-soft);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.postage-line b{color:var(--navy)}
+
+/* ---------- wizard item-count nudge ---------- */
+.count-chips{display:flex;gap:10px;margin:2px 0 4px;flex-wrap:wrap}
+.count-chip{border:1.5px solid var(--line);background:var(--label);border-radius:10px;padding:10px 16px;font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;color:var(--ink-soft);transition:all .15s}
+.count-chip:hover{border-color:var(--navy)}
+.count-chip.sel{background:var(--navy);border-color:var(--navy);color:#fff}
+.wiz-warn{display:none;margin-top:14px;border-radius:11px;padding:13px 16px;font-size:14px;border:1.5px solid #F0C6C6;background:#FBEDED;color:#8E1B20;max-width:60ch}
+.wiz-warn.good{border-color:#F0D583;background:var(--sun-soft);color:var(--navy-deep)}
+.wiz-warn.on{display:block}
+
+/* ---------- step icons ---------- */
+.step-ico{position:absolute;top:26px;right:26px;width:44px;height:44px;border-radius:12px;background:var(--sun-soft);display:grid;place-items:center;color:var(--navy-deep)}
+.step-ico svg{width:22px;height:22px}
+
+/* ---------- coverage dot map ---------- */
+.map-row{display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:center;margin-bottom:52px}
+#auMap{position:relative;display:grid;gap:5px;width:max-content;margin:0 auto}
+.mdot{display:block;width:9px;height:9px;border-radius:50%;background:rgba(157,180,240,.32)}
+.mdot.hot{background:var(--sun);box-shadow:0 0 0 0 rgba(255,201,7,.65);animation:hotpulse 2.2s infinite}
+@keyframes hotpulse{70%{box-shadow:0 0 0 11px rgba(255,201,7,0)}100%{box-shadow:0 0 0 0 rgba(255,201,7,0)}}
+.map-ring{position:absolute;border:1.5px solid rgba(255,216,77,.6);border-radius:50%;transform:translate(-50%,-50%);animation:ringGrow 3.4s ease-out infinite;pointer-events:none}
+@keyframes ringGrow{from{width:14px;height:14px;opacity:.9}to{width:330px;height:330px;opacity:0}}
+.map-tag{position:absolute;transform:translate(14px,-50%);font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.12em;color:#FFD84D;white-space:nowrap}
+.map-legend{list-style:none;display:grid;gap:16px;margin-top:24px}
+.map-legend li{display:flex;gap:14px;align-items:flex-start;font-size:14px;color:#A9B6D6}
+.map-legend b{color:#fff;display:block;font-size:15px}
+.lg-dot{width:13px;height:13px;border-radius:50%;flex:none;margin-top:4px}
+.lg-dot.y{background:var(--sun)}
+.lg-dot.r{background:transparent;border:2px solid rgba(255,216,77,.7)}
+
+/* ---------- pharmacy tabs ---------- */
+.loc-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.loc-tab{font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.08em;padding:10px 15px;border-radius:9px;border:1.5px solid var(--line);background:var(--gauze);color:var(--ink-soft);transition:all .15s}
+.loc-tab:hover{border-color:var(--navy)}
+.loc-tab.sel{background:var(--navy);border-color:var(--navy);color:#fff}
+[hidden]{display:none !important}
+
+/* ---------- photos ---------- */
+.photo-card{
+  position:absolute;z-index:0;top:-26px;left:-9%;width:74%;height:78%;
+  border-radius:18px;overflow:hidden;transform:rotate(-3deg);
+  background:linear-gradient(135deg,#12295F,#1B3C87);box-shadow:var(--shadow-pop);
+}
+.photo-card img{width:100%;height:100%;object-fit:cover;opacity:.92}
+.script{position:relative;z-index:2}
+.photo-banner{position:relative;border-radius:20px;overflow:hidden;min-height:340px;display:flex;align-items:flex-end;box-shadow:var(--shadow-pop);background:linear-gradient(135deg,#12295F,#1B3C87)}
+.photo-banner img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:kenburns 20s ease-in-out infinite alternate}
+.pb-shade{position:absolute;inset:0;background:linear-gradient(to top,rgba(15,30,69,.9),rgba(15,30,69,.12) 62%)}
+.pb-body{position:relative;padding:40px;color:#fff;max-width:62ch}
+.pb-body .eyebrow{color:#FFD84D}.pb-body .eyebrow::before{background:#FFD84D}
+.pb-body h2{font-size:clamp(26px,3.2vw,36px);margin:14px 0 18px}
+@keyframes kenburns{from{transform:scale(1)}to{transform:scale(1.08)}}
+.slim{padding:0 0 88px}
+.faq-photo{max-width:780px;height:200px;border-radius:16px;overflow:hidden;margin-bottom:30px;background:linear-gradient(135deg,#12295F,#1B3C87)}
+.faq-photo img{width:100%;height:100%;object-fit:cover;animation:kenburns 26s ease-in-out infinite alternate}
+
+/* ---------- responsive ---------- */
+@media (max-width:980px){
+  .hero-grid{grid-template-columns:1fr;gap:48px}
+  .script{margin:0 auto}
+  .steps{grid-template-columns:1fr}
+  .cover-grid{grid-template-columns:1fr 1fr}
+  .contact-band{grid-template-columns:1fr}
+  .bulk-grid{grid-template-columns:1fr;gap:40px}
+  .map-row{grid-template-columns:1fr;gap:36px}
+  .van-track{margin:32px auto 0}
+  .foot-grid{grid-template-columns:1fr 1fr}
+  .nav-links{display:none}
+}
+@media (max-width:640px){
+  section{padding:64px 0}
+  .hero{padding:52px 0 64px}
+  .cover-grid{grid-template-columns:1fr}
+  .field-row{grid-template-columns:1fr}
+  .wiz-body{padding:26px 20px}
+  .wiz-rail .rail-step span.lbl{display:none}
+  .mob-cta{display:block}
+  body{padding-bottom:76px}
+  .foot-grid{grid-template-columns:1fr}
+  .tag-2{display:none}
+  .photo-card{display:none}
+  .photo-banner{min-height:260px}
+  .pb-body{padding:26px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+  .s-item{opacity:1;transform:none}
+  html{scroll-behavior:auto}
+}
+:focus-visible{outline:2.5px solid var(--navy);outline-offset:2px;border-radius:4px}
+
+/* ============================================================
+   LIQUID GLASS SKIN — Apple-style frosted overrides
+   ============================================================ */
+body{background:#EFF3FA}
+.aurora{position:fixed;inset:-12%;z-index:-2;pointer-events:none;filter:blur(72px) saturate(1.25)}
+.orb{position:absolute;display:block;border-radius:50%;opacity:.55;animation:orbDrift 26s ease-in-out infinite alternate}
+.orb-1{width:54vw;height:54vw;left:-14vw;top:-16vw;background:radial-gradient(circle at 30% 30%,#9CC2FF,#5E8FE8 58%,transparent 72%)}
+.orb-2{width:46vw;height:46vw;right:-12vw;top:5vw;background:radial-gradient(circle at 60% 40%,#FFE79A,#FFC907 52%,transparent 72%);animation-delay:-9s}
+.orb-3{width:48vw;height:48vw;left:20vw;bottom:-20vw;background:radial-gradient(circle at 50% 50%,#C9D9FF,#8FB0F5 58%,transparent 74%);animation-delay:-17s}
+@keyframes orbDrift{to{transform:translate(6vw,4vw) scale(1.12)}}
+.bg-cross{filter:blur(26px);opacity:.7}
+.cross-b{opacity:.5}
+
+/* --- floating glass nav --- */
+header.nav{background:transparent;border-bottom:none;backdrop-filter:none;top:10px}
+.nav-inner{background:rgba(255,255,255,.55);backdrop-filter:blur(24px) saturate(1.7);-webkit-backdrop-filter:blur(24px) saturate(1.7);border:1px solid rgba(255,255,255,.7);border-radius:20px;padding:0 16px;height:62px;box-shadow:0 12px 32px -14px rgba(15,30,69,.28),inset 0 1px 0 rgba(255,255,255,.85)}
+
+/* --- frost 3D liquid buttons --- */
+.btn{position:relative;overflow:hidden;border-radius:999px;font-weight:600;letter-spacing:-.01em;
+  backdrop-filter:blur(14px) saturate(1.5);-webkit-backdrop-filter:blur(14px) saturate(1.5);
+  transition:transform .55s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease;transform:translateZ(0)}
+.btn::before{content:"";position:absolute;inset:1px;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.18) 40%,rgba(255,255,255,0) 58%,rgba(255,255,255,.28));opacity:.9}
+.btn::after{content:"";position:absolute;top:-60%;bottom:-60%;left:-30%;width:36%;pointer-events:none;
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.8),transparent);
+  transform:skewX(-18deg) translateX(-170%);transition:transform .7s ease}
+.btn:hover::after{transform:skewX(-18deg) translateX(430%)}
+.btn:hover{transform:translateY(-2px) scale(1.02)}
+.btn:active{transform:translateY(1px) scale(.955)}
+.btn-primary{background:linear-gradient(180deg,rgba(255,216,70,.96),rgba(255,196,0,.92));color:#0F1E45;
+  border:1px solid rgba(255,255,255,.75);
+  box-shadow:0 12px 26px -10px rgba(226,160,0,.6),inset 0 -3px 7px rgba(158,106,0,.3),inset 0 1.5px 0 rgba(255,255,255,.95)}
+.btn-primary:hover{background:linear-gradient(180deg,rgba(255,224,100,.98),rgba(255,201,7,.95));transform:translateY(-2px) scale(1.02);
+  box-shadow:0 18px 34px -12px rgba(226,160,0,.65),inset 0 -3px 7px rgba(158,106,0,.3),inset 0 1.5px 0 rgba(255,255,255,.95)}
+.btn-ghost{background:rgba(255,255,255,.45);color:var(--ink);border:1px solid rgba(255,255,255,.8);
+  box-shadow:0 10px 26px -14px rgba(15,30,69,.35),inset 0 1px 0 rgba(255,255,255,.9)}
+.btn-ghost:hover{border-color:rgba(255,255,255,.95);color:var(--navy-deep);background:rgba(255,255,255,.62)}
+
+/* --- glass surfaces --- */
+.wizard,.step-card,.parcel-card,.contact-card,details{
+  background:rgba(255,255,255,.6);backdrop-filter:blur(26px) saturate(1.6);-webkit-backdrop-filter:blur(26px) saturate(1.6);
+  border:1px solid rgba(255,255,255,.72);
+  box-shadow:0 24px 54px -24px rgba(15,30,69,.3),inset 0 1px 0 rgba(255,255,255,.85)}
+.step-card{border-top:1px solid rgba(255,255,255,.72)}
+.step-card::after{content:"";position:absolute;top:0;left:22px;right:22px;height:4px;border-radius:0 0 6px 6px;background:linear-gradient(90deg,var(--navy) 0 70%,var(--sun) 70%)}
+details{border-radius:18px}
+.script{background:rgba(255,255,255,.7);backdrop-filter:blur(22px) saturate(1.6);-webkit-backdrop-filter:blur(22px) saturate(1.6);border:1px solid rgba(255,255,255,.8);box-shadow:0 30px 64px -22px rgba(15,30,69,.42),inset 0 1px 0 rgba(255,255,255,.9)}
+.script-foot{background:rgba(255,255,255,.42);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1.5px dashed rgba(27,60,135,.22)}
+.script-clinic,.script-head{border-color:rgba(27,60,135,.12)}
+.s-item{border-color:rgba(27,60,135,.1)}
+.float-tag{background:rgba(15,30,69,.6);backdrop-filter:blur(16px) saturate(1.5);-webkit-backdrop-filter:blur(16px) saturate(1.5);border:1px solid rgba(255,255,255,.28);box-shadow:0 16px 34px -14px rgba(15,30,69,.5),inset 0 1px 0 rgba(255,255,255,.3)}
+.ticker{background:rgba(15,30,69,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.band{background:rgba(238,243,252,.55)}
+.chip,.med{background:rgba(255,255,255,.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.8);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 4px 12px -6px rgba(15,30,69,.15)}
+.wiz-rail{border-color:rgba(27,60,135,.1)}
+.wiz-rail .rail-step{background:rgba(255,255,255,.28);border-color:rgba(27,60,135,.08)}
+.rail-step.active{background:rgba(255,255,255,.65)}
+.rail-num{background:rgba(255,255,255,.7);border-color:rgba(27,60,135,.18)}
+.field input,.field select{background:rgba(255,255,255,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(27,60,135,.14);border-radius:14px}
+.field input:focus,.field select:focus{background:rgba(255,255,255,.85);border-color:rgba(27,60,135,.75);box-shadow:0 0 0 4px rgba(27,60,135,.14)}
+.loc-tab,.count-chip{background:rgba(255,255,255,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.8);border-radius:999px;box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}
+.loc-tab.sel,.count-chip.sel{background:rgba(27,60,135,.92);border-color:rgba(27,60,135,.92);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 8px 18px -8px rgba(27,60,135,.6)}
+.route-result{background:rgba(255,216,70,.3);backdrop-filter:blur(14px) saturate(1.5);-webkit-backdrop-filter:blur(14px) saturate(1.5);border:1px solid rgba(255,255,255,.7);box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+.route-ico{background:rgba(255,255,255,.75)}
+.drop{background:rgba(255,255,255,.38);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:2px dashed rgba(27,60,135,.24);border-radius:20px}
+.drop.dragover{border-color:var(--sun-deep);background:rgba(255,216,70,.3)}
+.drop-ico{background:rgba(255,255,255,.8);box-shadow:0 10px 22px -10px rgba(15,30,69,.3),inset 0 1px 0 #fff}
+.file-chip{background:rgba(255,255,255,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.8)}
+.ref{background:rgba(255,255,255,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1.5px dashed rgba(27,60,135,.3)}
+.verdict.good{background:rgba(255,216,70,.5);border-color:rgba(255,255,255,.8);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.verdict.bad{background:rgba(251,222,222,.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.wiz-warn{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.wiz-warn{background:rgba(251,222,222,.72)}
+.wiz-warn.good{background:rgba(255,222,96,.45)}
+.parcel{background:rgba(255,255,255,.4);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1.5px solid rgba(27,60,135,.16)}
+summary .plus{background:rgba(27,60,135,.08)}
+details[open] summary .plus{background:rgba(255,216,70,.55)}
+.ph-card{background:rgba(255,255,255,.07);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);border:1px solid rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}
+.ph-card.national{background:rgba(255,216,77,.14);border-color:rgba(255,216,77,.4)}
+.pb-body{background:rgba(15,30,69,.38);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);border:1px solid rgba(255,255,255,.28);border-radius:24px;margin:26px;box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+.pb-shade{background:linear-gradient(to top,rgba(15,30,69,.6),rgba(15,30,69,.08) 62%)}
+.faq-photo{border:1px solid rgba(255,255,255,.7);box-shadow:0 20px 44px -20px rgba(15,30,69,.35)}
+.photo-card{border:1px solid rgba(255,255,255,.6)}
+.contact-card .row{border-color:rgba(27,60,135,.1)}
+
+/* --- liquid "Free." pill --- */
+.hero h1 .free::after{left:-13px;right:-13px;top:-3px;bottom:0;height:auto;border-radius:999px;transform:none;
+  background:linear-gradient(180deg,rgba(255,224,110,.95),rgba(255,199,20,.8));
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,.85);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.95),inset 0 -3px 6px rgba(163,110,0,.25),0 10px 24px -10px rgba(226,160,0,.5)}
+
+/* --- idle float on the script stage --- */
+.script-stage{animation:cardIn .8s cubic-bezier(.2,.8,.3,1) .4s forwards,stageFloat 7s ease-in-out 1.6s infinite alternate}
+@keyframes stageFloat{to{transform:translateY(-9px)}}
+
+
+/* ============================================================
+   APPLE REFINEMENT — restraint pass
+   ============================================================ */
+body{background:#FBFBFD;font-size:16.5px}
+:root{--ink-soft:#5A6478}
+section{padding:106px 0}
+.aurora{opacity:.55;filter:blur(95px) saturate(1.08)}
+.orb{opacity:.3;animation-duration:44s}
+.orb-2{opacity:.24}
+
+/* quiet ribbon instead of marquee */
+.ticker{background:rgba(15,30,69,.88);font-size:12px;letter-spacing:.02em;text-transform:none}
+.ticker-track{animation:none;width:100%;justify-content:center;padding:10px 16px;white-space:normal;text-align:center}
+
+/* slim nav */
+.nav-inner{height:54px;border-radius:17px}
+.nav-links{gap:32px}
+.nav-links a{font-size:13.5px;font-weight:500;color:#3C465C}
+.brand-name{font-size:16.5px}
+.brand-mark{width:30px;height:30px;border-radius:8px}
+.btn-sm{padding:9px 16px;font-size:13.5px}
+
+/* apple eyebrows: small, semibold, no dash, no caps */
+.eyebrow{font-family:var(--font-body);font-size:14.5px;font-weight:600;letter-spacing:-.005em;text-transform:none;color:var(--navy)}
+.eyebrow::before{content:none}
+.band-ink .eyebrow{color:#FFD84D}
+
+/* type scale: bigger, tighter, calmer */
+.display{letter-spacing:-.035em}
+.hero h1{font-size:clamp(44px,6.4vw,78px);margin:16px auto 22px;max-width:14ch}
+.sec-head h2{font-size:clamp(31px,4vw,46px)}
+.sec-head{margin-bottom:60px}
+.sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
+.sec-head.center .lede{margin-left:auto;margin-right:auto}
+.lede{font-size:19px;line-height:1.55;letter-spacing:-.014em}
+
+/* centered apple hero composition */
+.hero{padding:88px 0 96px}
+.hero-grid{grid-template-columns:1fr;gap:66px;justify-items:center;text-align:center}
+.hero .lede{margin:0 auto 32px;max-width:52ch}
+.hero-ctas{justify-content:center}
+.chips{justify-content:center}
+.script-stage{width:100%;max-width:520px}
+.script{margin:0 auto}
+.photo-card{left:50%;top:-34px;width:560px;max-width:94%;height:84%;transform:translateX(-52%) rotate(-3deg)}
+.van-track{margin:38px auto 0}
+
+/* gradient word instead of highlight pill */
+.hero h1 .free{background:linear-gradient(115deg,#E8A200,#FFC907 45%,#FFDf70 70%,#E8A200);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero h1 .free::after{content:none}
+
+/* quieter chips & data lines */
+.chip{font-family:var(--font-body);font-size:13px;font-weight:500;letter-spacing:-.005em;color:#5A6478;border:1px solid rgba(15,30,69,.08);box-shadow:none;padding:8px 14px}
+.chip i{width:5px;height:5px}
+.also,.deliv-note,.wiz-note,.pc-label,.mono-line,.postage-line{letter-spacing:.06em}
+.also,.wiz-note{opacity:.85}
+
+/* softer liquid buttons */
+.btn{transition:transform .45s cubic-bezier(.34,1.4,.64,1),box-shadow .3s ease,background .2s ease}
+.btn:hover{transform:translateY(-1.5px) scale(1.015)}
+.btn:active{transform:translateY(1px) scale(.97)}
+.btn::after{background:linear-gradient(105deg,transparent,rgba(255,255,255,.55),transparent)}
+.btn-primary{box-shadow:0 8px 20px -10px rgba(226,160,0,.45),inset 0 -2px 6px rgba(158,106,0,.26),inset 0 1.5px 0 rgba(255,255,255,.9)}
+.btn-primary:hover{box-shadow:0 12px 26px -11px rgba(226,160,0,.5),inset 0 -2px 6px rgba(158,106,0,.26),inset 0 1.5px 0 rgba(255,255,255,.9)}
+.btn-ghost{box-shadow:0 6px 18px -12px rgba(15,30,69,.28),inset 0 1px 0 rgba(255,255,255,.9)}
+
+/* medication tape → still, centered grid */
+.tape-wrap{mask-image:none;-webkit-mask-image:none;overflow:visible}
+.tape{animation:none;white-space:normal;flex-wrap:wrap;justify-content:center;gap:12px;max-width:900px;margin:0 auto;display:flex}
+.med{font-size:12.5px}
+.tape-cta{justify-content:center}
+.tape-cta .fine{width:100%;text-align:center}
+
+/* calm the rest of the motion */
+.photo-banner img,.faq-photo img{animation-duration:32s}
+.scanline{animation-duration:4s}
+.rv{transform:translateY(14px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+
+/* faq: apple list feel */
+details{border-radius:20px}
+summary{font-size:17px;padding:22px 26px}
+.faq-a{font-size:16px;padding:0 26px 24px}
+.faq-list,.faq-photo{margin-left:auto;margin-right:auto}
+
+/* photo banner: centered statement */
+.photo-banner{min-height:430px;align-items:center;justify-content:center;text-align:center}
+.pb-body{margin:0;padding:52px 48px;max-width:660px;background:rgba(15,30,69,.34)}
+.pb-body h2{font-size:clamp(30px,4vw,44px)}
+.pb-body .btn{margin-top:4px}
+
+/* footer air */
+footer{padding:76px 0 48px;font-size:13.5px}
+.foot-legal{opacity:.85}
+
+@media (max-width:640px){
+  section{padding:70px 0}
+  .hero{padding:60px 0 72px}
+  .hero h1{max-width:12ch}
+  .nav-inner{height:50px}
+}
+
+
+/* ============================================================
+   CLARITY PASS — hierarchy & plain-language styling
+   ============================================================ */
+.band{background:linear-gradient(180deg,#EDF2FB,#E5EDFA)}
+.wizard{box-shadow:0 36px 74px -28px rgba(15,30,69,.42),inset 0 1px 0 rgba(255,255,255,.85),0 0 0 8px rgba(255,201,7,.16)}
+.wiz-head{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:22px 30px;background:linear-gradient(135deg,#12295F,#1E3F8F);color:#fff}
+.wiz-head .wh-kicker{display:block;font-size:12.5px;font-weight:700;color:#FFD84D;margin-bottom:3px}
+.wiz-head h3{font-family:var(--font-display);font-weight:700;font-size:21px;letter-spacing:-.02em;margin:0;color:#fff}
+.wh-time{font-size:13px;color:rgba(255,255,255,.75);white-space:nowrap}
+.hero-ctas .btn-primary{padding:17px 32px;font-size:16.5px}
+.hero-ctas .btn-ghost{font-size:15px;background:rgba(255,255,255,.32)}
+.cta-note{font-size:13px;color:#5A6478;margin:-20px 0 30px}
+.cue-wrap{display:flex;justify-content:center;margin-top:44px}
+.scroll-cue{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:var(--navy);
+  background:rgba(255,255,255,.65);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.9);box-shadow:0 12px 26px -12px rgba(15,30,69,.35);
+  animation:cueBob 2s ease-in-out infinite}
+.scroll-cue svg{width:19px;height:19px}
+.scroll-cue:hover{color:var(--navy-deep);background:rgba(255,255,255,.85)}
+@keyframes cueBob{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+.step-card::before{background:var(--navy);color:#fff}
+.loc-tab,.count-chip{font-family:var(--font-body);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none}
+.verdict{font-family:var(--font-body);font-size:12.5px;font-weight:600;letter-spacing:.01em;text-transform:none}
+.wiz-note{font-family:var(--font-body);font-size:13px;letter-spacing:0;color:#5A6478;max-width:44ch;text-transform:none}
+.wiz-plain{display:block;font-size:14px;color:#5A6478;margin-top:18px;max-width:74ch;line-height:1.6}
+.also,.deliv-note{font-family:var(--font-body);font-size:12.5px;letter-spacing:0}
+.deliv-note{font-size:13px}
+.pc-label{font-family:var(--font-body);font-size:13.5px;font-weight:600;letter-spacing:0;color:var(--ink);text-transform:none}
+.mono-line{letter-spacing:.03em}
+.postage-line{letter-spacing:.02em}
+@media (max-width:640px){
+  .wh-time{display:none}
+  .wiz-head{padding:18px 22px}
+}
+
+
+/* ============================================================
+   VIAL METER v2 — legible medicine vials in empty slots
+   ============================================================ */
+.parcel{height:180px;background:#FFFFFF;border:1.5px solid #E2E8F4;border-radius:16px;
+  backdrop-filter:none;-webkit-backdrop-filter:none;
+  box-shadow:inset 0 -14px 22px -18px rgba(15,30,69,.22);
+  gap:10px;padding:20px 18px 16px;align-items:flex-end;justify-content:center}
+.parcel::before{content:none}
+.parcel::after{content:none}
+.vial{position:relative;display:block;width:clamp(26px,8.5vw,44px);height:auto;
+  background:none;border:none;border-radius:0;opacity:1;transform:none;transition:none;padding:0}
+.vial::before{content:"";position:absolute;inset:4px 5px 0 5px;width:auto;height:auto;left:5px;top:4px;
+  transform:none;background:transparent;
+  border:1.6px dashed #CBD6EA;border-radius:10px;transition:opacity .3s}
+.vial::after{content:none}
+.vial svg{display:block;width:100%;height:auto;position:relative;
+  opacity:0;transform:translateY(12px) scale(.88);
+  transition:opacity .35s ease,transform .45s cubic-bezier(.34,1.56,.64,1)}
+.vial.on{opacity:1;transform:none}
+.vial.on svg{opacity:1;transform:none}
+.vial.on::before{opacity:0}
+@media (max-width:640px){
+  .parcel{gap:6px;padding:16px 12px 12px;height:150px}
+}
+
+
+/* ============================================================
+   v9 — unmissable inputs + modern duotone icon system
+   ============================================================ */
+/* --- fields you can't miss --- */
+.field label{font-family:var(--font-body);font-size:13.5px;font-weight:600;letter-spacing:0;text-transform:none;color:#3C465C;margin-bottom:9px;transition:color .2s}
+.field:focus-within label{color:var(--navy)}
+.input-wrap{position:relative}
+.in-ico{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:#96A5C6;transition:color .2s;pointer-events:none}
+.in-ico svg{width:20px;height:20px;display:block}
+.field:focus-within .in-ico{color:var(--navy)}
+.field input,.field select{
+  background:#FFFFFF;border:1.5px solid #C9D5EA;border-radius:14px;
+  font-size:17px;padding:16px 18px;caret-color:#1B3C87;
+  box-shadow:inset 0 2px 5px rgba(15,30,69,.05);
+  transition:border-color .2s,box-shadow .25s,transform .25s,background .2s}
+.input-wrap input{padding-left:48px}
+.field input::placeholder{color:#9AA9C6;transition:opacity .2s}
+.field input:focus::placeholder{opacity:.45}
+.field input:focus,.field select:focus{
+  background:#fff;border-color:#1B3C87;transform:translateY(-1px);
+  box-shadow:0 0 0 4px rgba(27,60,135,.16),0 10px 22px -12px rgba(27,60,135,.35),inset 0 1px 3px rgba(15,30,69,.04)}
+
+/* --- duotone gradient icon tiles --- */
+.step-ico{width:54px;height:54px;border-radius:16px;color:#fff;
+  background:linear-gradient(135deg,#1E3F8F,#3E66C7);
+  box-shadow:0 12px 24px -10px rgba(27,60,135,.55),inset 0 1px 0 rgba(255,255,255,.35);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.step-ico svg{width:25px;height:25px;stroke-width:2.2}
+.step-card:hover .step-ico{transform:scale(1.08) rotate(-2deg)}
+.drop-ico{width:62px;height:62px;border-radius:18px;color:#12295F;
+  background:linear-gradient(135deg,#FFE07A,#F7B900);
+  box-shadow:0 14px 26px -10px rgba(226,160,0,.6),inset 0 1.5px 0 rgba(255,255,255,.7)}
+.drop-ico svg{width:28px;height:28px;stroke-width:2.2}
+.drop:hover .drop-ico{transform:scale(1.06)}
+.drop-ico{transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.route-ico{width:44px;height:44px;border-radius:13px;color:#fff;
+  background:linear-gradient(135deg,#1E3F8F,#3E66C7);
+  box-shadow:0 10px 20px -9px rgba(27,60,135,.55),inset 0 1px 0 rgba(255,255,255,.35)}
+.route-ico svg{width:21px;height:21px;stroke-width:2.2}
+.contact-card .row svg{width:42px;height:42px;padding:10.5px;border-radius:13px;box-sizing:border-box;color:#fff;flex:none;
+  background:linear-gradient(135deg,#1E3F8F,#3E66C7);
+  box-shadow:0 10px 20px -9px rgba(27,60,135,.5),inset 0 1px 0 rgba(255,255,255,.35)}
+.brand-mark{background:linear-gradient(135deg,#16306E,#2C4FAF);
+  box-shadow:0 8px 16px -7px rgba(27,60,135,.55),inset 0 1px 0 rgba(255,255,255,.3)}
+.s-check{width:21px;height:21px;border-radius:7px;color:#fff;
+  background:linear-gradient(135deg,#1E3F8F,#3E66C7);
+  box-shadow:0 5px 10px -5px rgba(27,60,135,.5)}
+.s-check svg{width:11px;height:11px}
+.scroll-cue{color:#fff;background:linear-gradient(135deg,#1E3F8F,#3E66C7);
+  border:1px solid rgba(255,255,255,.4);
+  box-shadow:0 14px 28px -12px rgba(27,60,135,.6),inset 0 1px 0 rgba(255,255,255,.35)}
+.scroll-cue:hover{color:#fff;background:linear-gradient(135deg,#25489C,#4A72D6)}
+
+
+/* ============================================================
+   v10 — prescriber bag directory + arrow buttons
+   ============================================================ */
+.med-toolbar{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:26px;justify-content:center}
+.med-search{position:relative;flex:1;min-width:250px;max-width:380px}
+.med-search .in-ico{left:16px}
+.med-search input{width:100%;background:#fff;border:1.5px solid #C9D5EA;border-radius:999px;
+  font-family:var(--font-body);font-size:15px;color:var(--ink);padding:13px 18px 13px 46px;outline:none;
+  caret-color:#1B3C87;box-shadow:inset 0 2px 5px rgba(15,30,69,.05);
+  transition:border-color .2s,box-shadow .25s}
+.med-search input:focus{border-color:#1B3C87;box-shadow:0 0 0 4px rgba(27,60,135,.16),0 8px 18px -10px rgba(27,60,135,.3)}
+.med-filters{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.mfilter{font-family:var(--font-body);font-size:13px;font-weight:600;padding:10px 16px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.85);background:rgba(255,255,255,.55);color:var(--ink-soft);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9);transition:all .18s;cursor:pointer}
+.mfilter:hover{border-color:var(--navy);color:var(--navy)}
+.mfilter.sel{background:rgba(27,60,135,.94);border-color:rgba(27,60,135,.94);color:#fff;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 8px 18px -8px rgba(27,60,135,.55)}
+.med-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.med-card{position:relative;display:flex;gap:14px;align-items:center;padding:17px 18px;border-radius:18px;
+  background:rgba(255,255,255,.78);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);
+  border:1px solid rgba(255,255,255,.85);
+  box-shadow:0 14px 30px -18px rgba(15,30,69,.28),inset 0 1px 0 rgba(255,255,255,.9);
+  transition:transform .28s cubic-bezier(.34,1.4,.64,1),box-shadow .25s}
+.med-card:hover{transform:translateY(-3px);box-shadow:0 22px 40px -18px rgba(15,30,69,.34),inset 0 1px 0 rgba(255,255,255,.9)}
+.mc-ico{width:42px;height:42px;border-radius:13px;flex:none;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(135deg,#1E3F8F,#3E66C7);
+  box-shadow:0 10px 20px -9px rgba(27,60,135,.55),inset 0 1px 0 rgba(255,255,255,.35)}
+.mc-ico svg{width:20px;height:20px}
+.mc-body{min-width:0;padding-right:8px}
+.med-card b{display:block;font-size:15px;font-weight:600;letter-spacing:-.012em;line-height:1.3}
+.med-card .mf{font-size:12.5px;color:#5A6478}
+.mc-tag{position:absolute;top:10px;right:12px;font-style:normal;font-size:10.5px;font-weight:600;
+  color:#1B3C87;background:#E7EDFB;border:1px solid #D6E0F5;border-radius:999px;padding:3px 9px}
+.med-count{margin-top:16px;font-size:13px;color:#5A6478;text-align:center}
+.med-empty{margin-top:10px;padding:24px;border:1.6px dashed #C9D5EA;border-radius:18px;color:#5A6478;text-align:center;font-size:14.5px}
+
+/* arrow buttons */
+.tape-cta{margin-top:36px}
+.btn-arrow{display:inline-flex;align-items:center;gap:13px;padding:9px 10px 9px 24px;border-radius:999px;
+  font-weight:600;font-size:15px;letter-spacing:-.01em;text-decoration:none;color:var(--ink);
+  background:rgba(255,255,255,.7);backdrop-filter:blur(14px) saturate(1.5);-webkit-backdrop-filter:blur(14px) saturate(1.5);
+  border:1px solid rgba(255,255,255,.9);
+  box-shadow:0 10px 24px -14px rgba(15,30,69,.35),inset 0 1px 0 rgba(255,255,255,.95);
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1),box-shadow .3s}
+.btn-arrow .ba-ico{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(135deg,#1E3F8F,#3E66C7);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 14px -6px rgba(27,60,135,.55);
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+.btn-arrow .ba-ico svg{width:17px;height:17px}
+.btn-arrow:hover{transform:translateY(-2px);box-shadow:0 16px 30px -14px rgba(15,30,69,.4),inset 0 1px 0 rgba(255,255,255,.95)}
+.btn-arrow:hover .ba-ico{transform:translateX(4px)}
+.btn-arrow:active{transform:translateY(0) scale(.97)}
+.btn-arrow.primary{background:linear-gradient(180deg,rgba(255,216,70,.96),rgba(255,196,0,.92));
+  border-color:rgba(255,255,255,.8);color:#0F1E45;
+  box-shadow:0 12px 26px -12px rgba(226,160,0,.55),inset 0 1.5px 0 rgba(255,255,255,.9)}
+.btn-arrow.primary .ba-ico{background:#12295F}
+@media (max-width:640px){
+  .med-toolbar{justify-content:stretch}
+  .med-search{max-width:none}
+}
+
+
+/* ============================================================
+   v11 — HERO WOW LAYER
+   ============================================================ */
+/* 1 · cursor spotlight */
+.hero{--mx:50%;--my:32%}
+.hero-spot{position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(620px circle at var(--mx) var(--my),rgba(255,201,7,.16),rgba(94,143,232,.11) 42%,transparent 68%)}
+
+/* 2 · word-by-word keynote headline */
+.hero h1.split{animation:none;opacity:1;transform:none;filter:none}
+.hero h1 .w{display:inline-block;opacity:0;transform:translateY(30px) scale(.98);filter:blur(10px);
+  animation:wordIn .75s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes wordIn{to{opacity:1;transform:none;filter:blur(0)}}
+
+/* 3 · living gold on "Free." */
+.hero h1 .free{background-size:220% 100%;background-position:0 0;animation:goldShift 5.5s ease-in-out infinite alternate}
+@keyframes goldShift{to{background-position:100% 0}}
+
+/* 4 · cinematic card entrance + halo + one-time sheen */
+@keyframes cardIn{from{opacity:0;transform:perspective(1100px) rotateX(16deg) translateY(48px) scale(.94)}to{opacity:1;transform:none}}
+.script-stage::before{content:"";position:absolute;left:50%;top:46%;width:132%;height:132%;z-index:-1;
+  transform:translate(-50%,-50%);pointer-events:none;
+  background:radial-gradient(closest-side,rgba(255,201,7,.22),rgba(94,143,232,.13) 55%,transparent 72%);
+  filter:blur(32px);animation:haloPulse 6s ease-in-out 1.4s infinite alternate;opacity:.75}
+@keyframes haloPulse{from{opacity:.65;transform:translate(-50%,-50%) scale(.94)}to{opacity:1;transform:translate(-50%,-50%) scale(1.07)}}
+.script::after{content:"";position:absolute;top:-40%;bottom:-40%;left:-30%;width:34%;pointer-events:none;
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.6),transparent);
+  transform:skewX(-16deg) translateX(-190%);animation:scriptSheen 1.15s ease 1.6s forwards}
+@keyframes scriptSheen{to{transform:skewX(-16deg) translateX(440%)}}
+
+/* 5 · parallax hooks (JS sets the vars) */
+.photo-card{transform:translateX(-52%) rotate(-3deg) translateY(var(--py,0px))}
+.hero-grid>div:first-child{transform:translateY(var(--pt,0px))}
+
+
+/* ============================================================
+   v12 — hero product-shot rebuild
+   ============================================================ */
+.hero h1{max-width:none;text-wrap:balance}
+.hero h1 .free.w{animation:wordIn .75s cubic-bezier(.2,.7,.2,1) forwards,goldShift 5.5s ease-in-out 1.2s infinite alternate}
+
+.script{background:rgba(255,255,255,.93)}
+.script-foot{background:rgba(246,248,253,.92)}
+
+.scanline{display:none}
+.s-item{position:relative}
+.s-item::after{content:"";position:absolute;inset:2px -8px;border-radius:9px;opacity:0;pointer-events:none;
+  background:linear-gradient(90deg,rgba(255,216,70,0),rgba(255,216,70,.4) 50%,rgba(255,216,70,0))}
+.s-item:nth-child(2)::after{animation:rowFlash .9s ease .7s}
+.s-item:nth-child(3)::after{animation:rowFlash .9s ease 1.2s}
+.s-item:nth-child(4)::after{animation:rowFlash .9s ease 1.7s}
+.s-item:nth-child(5)::after{animation:rowFlash .9s ease 2.2s}
+@keyframes rowFlash{30%{opacity:1}100%{opacity:0}}
+
+.sat{position:absolute;z-index:1;width:202px;padding:16px 17px;border-radius:18px;text-align:left;
+  opacity:0;transform:translateY(20px)}
+.sat b{display:block;font-size:14.5px;font-weight:600;letter-spacing:-.01em;margin:2px 0 1px}
+.sat-sub{font-size:12px;opacity:.75}
+.sat-l{left:-158px;top:118px;color:#fff;
+  background:rgba(15,30,69,.86);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);
+  border:1px solid rgba(255,255,255,.25);box-shadow:0 24px 48px -20px rgba(15,30,69,.55),inset 0 1px 0 rgba(255,255,255,.25);
+  animation:satInL .8s cubic-bezier(.2,.8,.3,1) 1.15s forwards,floatL 6s ease-in-out 2.2s infinite alternate}
+.sat-r{right:-152px;top:44px;color:var(--ink);
+  background:rgba(255,255,255,.82);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);
+  border:1px solid rgba(255,255,255,.9);box-shadow:0 22px 44px -20px rgba(15,30,69,.35),inset 0 1px 0 rgba(255,255,255,.95);
+  animation:satInR .8s cubic-bezier(.2,.8,.3,1) 1.3s forwards,floatR 7s ease-in-out 2.4s infinite alternate}
+@keyframes satInL{to{opacity:1;transform:rotate(-7deg)}}
+@keyframes satInR{to{opacity:1;transform:rotate(6deg)}}
+@keyframes floatL{from{transform:rotate(-7deg) translateY(0)}to{transform:rotate(-7deg) translateY(-9px)}}
+@keyframes floatR{from{transform:rotate(6deg) translateY(0)}to{transform:rotate(6deg) translateY(-12px)}}
+.sat-ico{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;color:#12295F;margin-bottom:8px;
+  background:linear-gradient(135deg,#FFE07A,#F7B900);box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
+.sat-ico svg{width:19px;height:19px}
+.sat-bar{display:block;height:7px;border-radius:99px;background:rgba(255,255,255,.22);margin-top:11px;overflow:hidden}
+.sat-bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#FFC907,#FFE07A);
+  animation:barGrow 1.5s cubic-bezier(.2,.8,.3,1) 1.9s forwards}
+@keyframes barGrow{to{width:78%}}
+.sat-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFC907;margin-bottom:8px;
+  box-shadow:0 0 0 0 rgba(255,201,7,.55);animation:hotpulse 2s infinite}
+@media (max-width:1120px){.sat{display:none}}
+
+
+/* ============================================================
+   v13 — live upload demo
+   ============================================================ */
+/* delivery widget rebalances to the right column */
+.sat-l{left:auto;right:-158px;top:auto;bottom:70px}
+
+/* the phone */
+.phone{position:absolute;z-index:3;left:-150px;bottom:30px;width:170px;height:344px;border-radius:32px;padding:10px;
+  background:linear-gradient(160deg,#1A2C55,#0F1E45);
+  box-shadow:0 36px 64px -22px rgba(15,30,69,.6),inset 0 1px 0 rgba(255,255,255,.25);
+  opacity:0;transform:translateY(26px) rotate(-6deg);
+  animation:phoneIn .8s cubic-bezier(.2,.8,.3,1) 1s forwards,phFloat 6.5s ease-in-out 2.2s infinite alternate}
+@keyframes phoneIn{to{opacity:1;transform:rotate(-6deg)}}
+@keyframes phFloat{from{transform:rotate(-6deg) translateY(0)}to{transform:rotate(-6deg) translateY(-9px)}}
+.ph-notch{position:absolute;top:16px;left:50%;transform:translateX(-50%);width:54px;height:15px;border-radius:99px;background:#0A1530;z-index:2}
+.ph-screen{position:relative;width:100%;height:100%;border-radius:24px;overflow:hidden;background:#0D1B3D}
+.ps{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;
+  padding:24px 14px 18px;opacity:0;transform:translateY(10px);transition:opacity .35s,transform .35s;pointer-events:none}
+.demo-s1 .ps-1,.demo-s2 .ps-2,.demo-s3 .ps-3,.demo-s4 .ps-3{opacity:1;transform:none}
+.ps-1{background:#0B1735}
+.vf{position:absolute;inset:38px 16px 70px;border:1.5px dashed rgba(255,255,255,.28);border-radius:14px}
+.mini-doc{position:relative;width:58px;height:74px;border-radius:6px;background:#fff;box-shadow:inset 0 0 0 1px #D9E1F2,0 6px 14px -6px rgba(0,0,0,.35)}
+.mini-doc::before{content:"";position:absolute;left:9px;right:9px;top:11px;bottom:11px;
+  background:repeating-linear-gradient(180deg,#C9D3E8 0 2px,transparent 2px 9px)}
+.shutter{position:absolute;bottom:13px;left:50%;transform:translateX(-50%);width:34px;height:34px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.35)}
+.ph-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:3}
+.flash .ph-flash{animation:flashPop .38s ease}
+@keyframes flashPop{18%{opacity:.95}100%{opacity:0}}
+.ps-2{background:#F3F6FC}
+.ps-2 .mini-doc{width:46px;height:60px}
+.ph-btn{font-family:var(--font-body);font-size:11px;font-weight:700;line-height:1.3;color:#12295F;text-align:center;
+  background:linear-gradient(180deg,#FFD84D,#FFC10A);border:none;border-radius:99px;padding:9px 15px;cursor:default;
+  box-shadow:0 7px 14px -6px rgba(226,160,0,.6),inset 0 1px 0 rgba(255,255,255,.8);transition:transform .2s}
+.demo-s2b .ph-btn{transform:scale(.92)}
+.ph-prog{width:76%;height:6px;border-radius:99px;background:#DCE4F5;overflow:hidden}
+.ph-prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,#FFC907,#FFE07A);transition:width 1.2s ease}
+.demo-s2b .ph-prog i{width:100%}
+.ph-label{font-size:10.5px;color:rgba(255,255,255,.85);letter-spacing:.02em}
+.ps-2 .ph-label{color:#5A6478}
+.ps-3{background:#0D1B3D}
+.ph-check{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(135deg,#1E3F8F,#3E66C7);box-shadow:0 12px 24px -8px rgba(27,60,135,.7)}
+.ph-check svg{width:25px;height:25px}
+
+/* the flying script */
+.fly-doc{position:absolute;z-index:4;left:-92px;bottom:196px;width:40px;height:52px;opacity:0;pointer-events:none;
+  transition:opacity .2s}
+.demo-s2b .fly-doc{opacity:1;transform:translate(240px,-64px) scale(.42) rotate(11deg);
+  transition:transform 1.05s cubic-bezier(.3,.7,.25,1),opacity .25s .1s}
+
+/* card receives it */
+.script{transition:transform .35s cubic-bezier(.2,.8,.3,1),box-shadow .45s}
+.demo-s3 .script{box-shadow:0 30px 64px -22px rgba(15,30,69,.42),inset 0 1px 0 rgba(255,255,255,.9),0 0 0 10px rgba(255,201,7,.22)}
+
+/* replayable checks each loop */
+.script-items.replay .s-item{opacity:0;transform:translateX(-8px);animation:itemIn .45s cubic-bezier(.2,.7,.3,1) forwards}
+.script-items.replay .s-item:nth-child(2){animation-delay:.05s}
+.script-items.replay .s-item:nth-child(3){animation-delay:.3s}
+.script-items.replay .s-item:nth-child(4){animation-delay:.55s}
+.script-items.replay .s-item:nth-child(5){animation-delay:.8s}
+.script-items.replay .s-check path{stroke-dashoffset:26;animation:draw .4s ease forwards}
+.script-items.replay .s-item:nth-child(2) .s-check path{animation-delay:.15s}
+.script-items.replay .s-item:nth-child(3) .s-check path{animation-delay:.4s}
+.script-items.replay .s-item:nth-child(4) .s-check path{animation-delay:.65s}
+.script-items.replay .s-item:nth-child(5) .s-check path{animation-delay:.9s}
+.script-items.replay .s-item:nth-child(2)::after{animation:rowFlash .8s ease .1s}
+.script-items.replay .s-item:nth-child(3)::after{animation:rowFlash .8s ease .35s}
+.script-items.replay .s-item:nth-child(4)::after{animation:rowFlash .8s ease .6s}
+.script-items.replay .s-item:nth-child(5)::after{animation:rowFlash .8s ease .85s}
+
+/* step caption */
+.demo-cap{display:flex;justify-content:center;gap:8px;margin:28px auto 0;max-width:460px;flex-wrap:wrap}
+.demo-cap span{font-size:12px;font-weight:600;color:#8A96B5;padding:7px 14px;border-radius:99px;
+  background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.85);transition:all .3s}
+.demo-cap span.on{color:#12295F;background:linear-gradient(180deg,#FFE07A,#FFC907);
+  border-color:rgba(255,255,255,.9);box-shadow:0 8px 16px -8px rgba(226,160,0,.5)}
+@media (max-width:1120px){.phone,.fly-doc{display:none}}
+
+
+/* ============================================================
+   v14 — smoothness + production uploads
+   ============================================================ */
+/* the big one: no more giant animated blur */
+.aurora{filter:none}
+.orb{opacity:.26;animation-duration:52s;will-change:transform}
+.orb-2{opacity:.2}
+.van,.script-stage,.phone,.sat,.fly-doc,.photo-banner img,.faq-photo img{will-change:transform}
+.btn{backdrop-filter:none;-webkit-backdrop-filter:none}
+
+/* one gentle shared rhythm */
+@keyframes stageFloat{to{transform:translateY(-6px)}}
+@keyframes phFloat{from{transform:rotate(-6deg) translateY(0)}to{transform:rotate(-6deg) translateY(-6px)}}
+@keyframes floatL{from{transform:rotate(-7deg) translateY(0)}to{transform:rotate(-7deg) translateY(-6px)}}
+@keyframes floatR{from{transform:rotate(6deg) translateY(0)}to{transform:rotate(6deg) translateY(-8px)}}
+.script-stage{animation:cardIn .8s cubic-bezier(.2,.8,.3,1) .4s forwards,stageFloat 9s ease-in-out 1.8s infinite alternate}
+.phone{animation:phoneIn .8s cubic-bezier(.2,.8,.3,1) 1s forwards,phFloat 8.5s ease-in-out 2.4s infinite alternate}
+.sat-l{animation:satInL .8s cubic-bezier(.2,.8,.3,1) 1.15s forwards,floatL 8s ease-in-out 2.6s infinite alternate}
+.sat-r{animation:satInR .8s cubic-bezier(.2,.8,.3,1) 1.3s forwards,floatR 9s ease-in-out 2.8s infinite alternate}
+
+/* softer demo transitions */
+.ps{transition:opacity .5s ease,transform .5s ease}
+.demo-s2b .fly-doc{transition:transform 1.15s cubic-bezier(.33,.66,.2,1),opacity .3s .12s}
+.stamp{transition:opacity .35s ease}
+
+/* everything sleeps when the hero leaves the screen */
+.hero.offstage .script-stage,.hero.offstage .phone,.hero.offstage .sat,
+.hero.offstage .van,.hero.offstage .orb{animation-play-state:paused}
+
+/* multi-file chips */
+.file-list{display:grid;gap:10px;margin-top:16px}
+.fchip{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.68);
+  border:1px solid rgba(255,255,255,.9);border-radius:12px;padding:10px 12px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 6px 16px -10px rgba(15,30,69,.25)}
+.fchip img{width:44px;height:44px;object-fit:cover;border-radius:9px;border:1px solid #D9E1F2;flex:none}
+.fchip .fn{flex:1;min-width:0;font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fchip .fs{font-size:11px;color:#8A96B5;white-space:nowrap}
+.fchip button{border:none;background:#FBEDED;color:#B31E24;border-radius:9px;width:28px;height:28px;
+  font-weight:700;cursor:pointer;flex:none;transition:background .15s}
+.fchip button:hover{background:#F5D9D9}
+
+
+/* ============================================================
+   v15 — fully self-contained (zero Shopify / zero external images)
+   ============================================================ */
+.photo-banner{min-height:400px;
+  background:
+    radial-gradient(560px 340px at 82% 18%,rgba(255,201,7,.32),transparent 65%),
+    radial-gradient(640px 420px at 12% 88%,rgba(94,143,232,.4),transparent 70%),
+    linear-gradient(135deg,#0F1E45,#1B3C87 55%,#16306E);
+  background-size:130% 130%,130% 130%,100% 100%;
+  animation:bannerPan 22s ease-in-out infinite alternate}
+@keyframes bannerPan{to{background-position:18% 30%,70% 60%,0 0}}
+.pb-art{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.pb-cross{position:absolute;width:220px;height:220px;opacity:.1}
+.pb-cross::before,.pb-cross::after{content:"";position:absolute;background:#fff;border-radius:26px}
+.pb-cross::before{left:50%;top:0;width:36%;height:100%;transform:translateX(-50%)}
+.pb-cross::after{top:50%;left:0;height:36%;width:100%;transform:translateY(-50%)}
+.pbc-1{top:-60px;left:6%;transform:rotate(12deg)}
+.pbc-2{bottom:-80px;right:8%;width:280px;height:280px;transform:rotate(-9deg);opacity:.08}
+.pb-ring{position:absolute;top:18%;right:20%;width:190px;height:190px;border:2px dashed rgba(255,255,255,.22);border-radius:50%}
+.pb-vial{position:absolute;width:52px;height:auto;will-change:transform}
+.pbv-1{left:9%;top:24%;transform:rotate(-14deg);animation:floatL 9s ease-in-out infinite alternate}
+.pbv-2{right:11%;bottom:16%;width:44px;transform:rotate(11deg);animation:floatR 10s ease-in-out 1s infinite alternate}
+.pbv-3{left:24%;bottom:10%;width:38px;transform:rotate(6deg);animation:floatR 8.5s ease-in-out .5s infinite alternate}
+.pb-shade{background:linear-gradient(to top,rgba(15,30,69,.45),transparent 55%)}
+@media (max-width:640px){.pb-vial,.pb-ring{display:none}}
+
+
+/* ============================================================
+   v16 — camera capture + upload illustration
+   ============================================================ */
+.drop{padding:34px 24px 30px}
+.drop-art{width:158px;height:auto;display:block;margin:0 auto 12px}
+.da-doc,.da-cam,.da-sp,.da-arrow{transform-box:fill-box;transform-origin:center}
+.da-doc{animation:daFloat 5.5s ease-in-out infinite alternate}
+.da-cam{animation:daCam 6.5s ease-in-out .8s infinite alternate}
+.da-sp{animation:daTwinkle 2.6s ease-in-out infinite}
+.da-sp2{animation-delay:1.3s}
+@keyframes daFloat{to{transform:translateY(-5px)}}
+@keyframes daCam{to{transform:translateY(-3px) rotate(4deg)}}
+@keyframes daTwinkle{0%,100%{opacity:.25}50%{opacity:1}}
+.da-arrow{transition:opacity .25s,transform .3s;transform:translateY(6px)}
+.drop.dragover .da-arrow{opacity:1;transform:none;animation:daBob 1s ease-in-out infinite alternate}
+.drop.dragover .da-doc{transform:translateY(-9px)}
+@keyframes daBob{to{transform:translateY(-4px)}}
+.drop.dragover .drop-art circle:first-of-type{stroke:#F5B300}
+
+.cam-btn{width:100%;margin-top:14px;justify-content:center;font-size:15.5px}
+@media (hover:hover) and (pointer:fine){.cam-btn{display:none}}
+
+
+/* v17 — two-destination coverage layout */
+.cover-grid{grid-template-columns:repeat(2,1fr);max-width:900px}
+
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true"><i class="orb orb-1"></i><i class="orb orb-2"></i><i class="orb orb-3"></i></div>
+<!-- ============ TICKER ============ -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track" id="tickerTrack">
+    <span>Free tracked delivery to any Australian clinic&nbsp;&nbsp;·&nbsp;&nbsp;<b>$0 to clinics</b>&nbsp;&nbsp;·&nbsp;&nbsp;No sign-up</span>
+  </div>
+</div>
+
+<!-- ============ NAV ============ -->
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFD84D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M12 11v5M9.5 13.5h5"/></svg>
+      </span>
+      <span class="brand-name">My Dr's Bag<small>BY DIRECT CHEMIST OUTLET</small></span>
+    </a>
+    <nav aria-label="Primary">
+      <ul class="nav-links">
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#coverage">Coverage</a></li>
+        <li><a href="#meds">Medications</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+    <a href="#upload" class="btn btn-primary btn-sm nav-cta">Upload script</a>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<main id="top">
+<section class="hero">
+  <div class="hero-spot" aria-hidden="true"></div>
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">PBS Prescriber Bag Supply</span>
+      <h1 class="display">Your Dr's Bag, dispensed<br>&amp; delivered. <span class="free">Free.</span></h1>
+      <p class="lede">Photograph your prescriber bag script and upload it. A Direct Chemist Outlet pharmacy dispenses it and delivers it to your clinic — usually the next business day. Medicare covers the medicines. We cover the delivery — batch 3–5+ items per script and the free post pays its way.</p>
+      <div class="hero-ctas">
+        <a href="#upload" class="btn btn-primary">Upload your Dr's Bag script</a>
+        <a href="#how" class="btn btn-ghost">See how it works</a>
+      </div>
+      <div class="cta-note">Free for clinics · PBS-covered · sends straight to the pharmacy</div>
+      <div class="chips" role="list">
+        <span class="chip" role="listitem"><i></i>100+ PBS-licensed pharmacies</span>
+        <span class="chip" role="listitem"><i></i>Next-day metro delivery</span>
+        <span class="chip" role="listitem"><i></i>$0 to clinics</span>
+        <span class="chip" role="listitem"><i></i>No sign-up required</span>
+      </div>
+    </div>
+
+    <div class="script-stage">
+      <aside class="phone" aria-hidden="true">
+        <span class="ph-notch"></span>
+        <div class="ph-screen">
+          <div class="ps ps-1">
+            <span class="vf"></span>
+            <span class="mini-doc md-cam"></span>
+            <span class="shutter"></span>
+            <span class="ph-label">Photograph your script</span>
+          </div>
+          <div class="ps ps-2">
+            <span class="mini-doc md-top"></span>
+            <button class="ph-btn" type="button" tabindex="-1">Upload your<br>Dr's Bag script</button>
+            <span class="ph-prog"><i></i></span>
+            <span class="ph-label pl-2">Sending…</span>
+          </div>
+          <div class="ps ps-3">
+            <span class="ph-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 10 18 20 6"/></svg></span>
+            <span class="ph-label">Sent to pharmacy</span>
+          </div>
+          <span class="ph-flash"></span>
+        </div>
+      </aside>
+      <span class="fly-doc mini-doc" aria-hidden="true"></span>
+      <aside class="sat sat-l" aria-hidden="true">
+        <span class="sat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7h11v9H2zM13 10h5l4 3.5V16h-9"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/></svg></span>
+        <b>Out for delivery</b>
+        <span class="sat-sub">Arrives tomorrow</span>
+        <span class="sat-bar"><i></i></span>
+      </aside>
+      <aside class="sat sat-r" aria-hidden="true">
+        <span class="sat-dot"></span>
+        <b>DCO Delacombe</b>
+        <span class="sat-sub">Dispensing now</span>
+      </aside>
+      <article class="script" aria-label="Example prescriber bag order being processed">
+        <div class="script-head">
+          <span class="t">PBS PRESCRIBER BAG</span>
+          <span class="n" id="scriptRef">REF MDB-260828</span>
+        </div>
+        <div class="script-clinic">
+          <b>GLENELG FAMILY PRACTICE</b><br>
+          DR A. NGUYEN · PRESCRIBER № 245XXXX<br>
+          DELACOMBE VIC 3356
+        </div>
+        <div class="script-items">
+          <div class="scanline" aria-hidden="true"></div>
+          <div class="s-item"><span class="s-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 10 18 20 6"/></svg></span><span class="s-name">Adrenaline 1:1000 inj</span><span class="s-qty">×5 AMP</span></div>
+          <div class="s-item"><span class="s-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 10 18 20 6"/></svg></span><span class="s-name">Glucagon 1 mg inj</span><span class="s-qty">×1 KIT</span></div>
+          <div class="s-item"><span class="s-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 10 18 20 6"/></svg></span><span class="s-name">Hydrocortisone 100 mg inj</span><span class="s-qty">×5 VIAL</span></div>
+          <div class="s-item"><span class="s-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 10 18 20 6"/></svg></span><span class="s-name">Glyceryl trinitrate spray</span><span class="s-qty">×1</span></div>
+        </div>
+        <div class="script-foot">
+          <span class="stamp" id="statusStamp">RECEIVED 09:41</span>
+          <div class="cost"><b>$0.00</b><span>COST TO CLINIC</span></div>
+        </div>
+      </article>
+      <div class="demo-cap" aria-hidden="true"><span>1 · Photograph</span><span>2 · Upload</span><span>3 · Dispensed &amp; delivered</span></div>
+      <div class="van-track" aria-hidden="true">
+        <svg class="van" viewBox="0 0 68 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="8" width="40" height="22" rx="4" fill="#1B3C87"/>
+          <path d="M42 14h11l9 9v7H42z" fill="#1B3C87"/>
+          <rect x="45.5" y="16.5" width="8" height="7" rx="1.5" fill="#DCE5F8"/>
+          <rect x="7" y="13" width="22" height="6" rx="3" fill="#FFD84D"/>
+          <rect x="2" y="26" width="60" height="4" rx="2" fill="#12295F"/>
+          <g class="wheel"><circle cx="16" cy="33" r="6" fill="#0F1E45"/><circle cx="16" cy="33" r="2.4" fill="#DCE5F8"/><rect x="15.2" y="27.4" width="1.6" height="11.2" rx=".8" fill="#DCE5F8" opacity=".85"/></g>
+          <g class="wheel"><circle cx="50" cy="33" r="6" fill="#0F1E45"/><circle cx="50" cy="33" r="2.4" fill="#DCE5F8"/><rect x="49.2" y="27.4" width="1.6" height="11.2" rx=".8" fill="#DCE5F8" opacity=".85"/></g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="cue-wrap"><a class="scroll-cue" href="#upload" aria-label="Go to the upload form"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 9 7 7 7-7"/></svg></a></div>
+</section>
+
+
+<!-- ============ BULK / WORTH THE POST ============ -->
+<section id="bulk">
+  <div class="wrap bulk-grid">
+    <div class="rv">
+      <span class="eyebrow">Make it worth the post</span>
+      <h2 class="display">One item can't ride free.<br>Three to five always can.</h2>
+      <p class="lede" style="margin-top:14px">Here's the honest bit: <b>we pay the Express Post ourselves.</b> On a single-item script the postage can cost more than the order — so 1–2 item uploads may not be able to be fulfilled. Batch <b>3–5 items or more</b> onto the one script and free next-day delivery works every time, for your clinic and for us.</p>
+      <p class="lede" style="margin-top:14px">Need one item urgently today? Skip the post — call the pharmacy and we'll sort it directly.</p>
+    </div>
+    <div class="parcel-card rv">
+      <div class="pc-label">How many items on your script?</div>
+      <div class="parcel" id="parcel" aria-hidden="true"></div>
+      <input type="range" class="bulk-slider" id="bulkSlider" min="1" max="8" value="1" step="1" aria-label="Items on script">
+      <div class="bulk-read">
+        <span class="bulk-count"><b id="bn">1</b><span id="bl">item on script</span></span>
+        <span class="verdict bad" id="verdict">Too small — may not be fulfilled</span>
+      </div>
+      <div class="postage-line"><span>Express postage — <b>paid by us</b></span><span>Cost to clinic — <b>$0.00</b></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ UPLOAD WIZARD ============ -->
+<section id="upload" class="band">
+  <div class="wrap">
+    <div class="sec-head center rv">
+      <span class="eyebrow">Upload in under a minute</span>
+      <h2 class="display">Three fields. One photo. Done.</h2>
+      <p class="lede">No account, no cart, no checkout. Tell us where you are, attach the script, and the nearest pharmacy takes it from there.</p>
+    </div>
+
+    <div class="wizard rv" id="wizard">
+      <div class="wiz-head">
+        <div>
+          <span class="wh-kicker">Start here</span>
+          <h3>Upload your Dr's Bag script</h3>
+        </div>
+        <span class="wh-time">Takes about a minute · No sign-up</span>
+      </div>
+      <div class="wiz-rail" aria-hidden="true">
+        <div class="rail-step active" data-rail="1"><span class="rail-num">1</span><span class="lbl">Your clinic</span></div>
+        <div class="rail-step" data-rail="2"><span class="rail-num">2</span><span class="lbl">Script photo</span></div>
+        <div class="rail-step" data-rail="3"><span class="rail-num">3</span><span class="lbl">Confirm</span></div>
+      </div>
+      <div class="wiz-body">
+
+        <!-- STEP 1 -->
+        <div class="wiz-pane on" data-pane="1">
+          <h3>Where should we deliver?</h3>
+          <p class="hint">Ballarat-district clinics get hand delivery from DCO Delacombe. Everywhere else in Australia, we dispense at Delacombe and ship free by Express Post with tracking.</p>
+          <div class="loc-tabs" role="tablist" aria-label="Choose your pharmacy">
+            <button type="button" class="loc-tab sel" data-loc="auto">Auto · by postcode</button>
+            <button type="button" class="loc-tab" data-loc="delacombe">Delacombe</button>
+            <button type="button" class="loc-tab" data-loc="national">Aus-wide post</button>
+          </div>
+          <div class="field-row">
+            <div class="field" id="pcodeField">
+              <label for="pcode">Clinic postcode</label>
+              <div class="input-wrap"><span class="in-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span><input id="pcode" inputmode="numeric" maxlength="4" placeholder="e.g. 3356" autocomplete="postal-code"></div>
+            </div>
+            <div class="field">
+              <label for="clinicName">Clinic name</label>
+              <div class="input-wrap"><span class="in-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M10 21v-4h4v4M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2"/></svg></span><input id="clinicName" placeholder="e.g. Glenelg Family Practice"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Roughly how many items on the script?</label>
+            <div class="count-chips" role="group" aria-label="Item count">
+              <button type="button" class="count-chip" data-count="few">1–2 items</button>
+              <button type="button" class="count-chip" data-count="ok">3–4 items</button>
+              <button type="button" class="count-chip" data-count="ok">5+ items</button>
+            </div>
+            <div class="wiz-warn" id="wizWarn" role="status"></div>
+          </div>
+          <div class="route-result" id="routeResult">
+            <span class="route-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+            <div>
+              <b id="routeName">—</b>
+              <p id="routeDetail">—</p>
+              <div class="mono-line" id="routeEta">—</div>
+              <div class="mono-line" id="routeEmail"></div>
+            </div>
+          </div>
+          <div class="wiz-foot">
+            <span class="wiz-note">We pay the postage — scripts with 3–5+ items always ship free. 1–2 item orders sometimes can't be.</span>
+            <button class="btn btn-primary" id="toStep2" disabled>Continue</button>
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="wiz-pane" data-pane="2">
+          <h3>Attach the script</h3>
+          <p class="hint">A clear phone photo is perfect. Include the whole page — prescriber details, items and signature.</p>
+          <label class="drop" id="drop" for="fileInput">
+            <svg class="drop-art" viewBox="0 0 150 112" aria-hidden="true">
+              <defs>
+                <linearGradient id="dgGold" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#FFE07A"/><stop offset="1" stop-color="#F5B300"/>
+                </linearGradient>
+                <linearGradient id="dgNavy" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#1E3F8F"/><stop offset="1" stop-color="#3E66C7"/>
+                </linearGradient>
+              </defs>
+              <circle cx="74" cy="56" r="47" fill="none" stroke="#C9D5EA" stroke-width="1.6" stroke-dasharray="5 6"/>
+              <g class="da-sp"><path d="M22 30v8M18 34h8" stroke="#F5B300" stroke-width="2.4" stroke-linecap="round"/></g>
+              <g class="da-sp da-sp2"><path d="M128 68v7M124.5 71.5h7" stroke="#3E66C7" stroke-width="2.2" stroke-linecap="round"/></g>
+              <g class="da-arrow" opacity="0">
+                <path d="M74 4v16M67 11l7-7 7 7" fill="none" stroke="#1B3C87" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+              <g class="da-doc">
+                <rect x="47" y="20" width="54" height="70" rx="8" fill="#FFFFFF" stroke="#C7D2E8" stroke-width="1.8"/>
+                <path d="M74 34v11M68.5 39.5h11" stroke="#1B3C87" stroke-width="2.8" stroke-linecap="round"/>
+                <rect x="56" y="55" width="36" height="3.2" rx="1.6" fill="#C4CEE4"/>
+                <rect x="56" y="62.5" width="27" height="3.2" rx="1.6" fill="#D7DFEF"/>
+                <rect x="56" y="70" width="31" height="3.2" rx="1.6" fill="#D7DFEF"/>
+              </g>
+              <g class="da-cam">
+                <circle cx="103" cy="80" r="20" fill="url(#dgGold)" stroke="#FFFFFF" stroke-width="2.5"/>
+                <rect x="92.5" y="74" width="21" height="14.5" rx="3.5" fill="none" stroke="#12295F" stroke-width="2.1"/>
+                <path d="M97 74l2.2-3h5.6l2.2 3" fill="none" stroke="#12295F" stroke-width="2.1" stroke-linejoin="round"/>
+                <circle cx="103" cy="81" r="3.6" fill="none" stroke="#12295F" stroke-width="2.1"/>
+              </g>
+            </svg>
+            <b>Drop your script photos here</b>
+            <p>or tap to browse — up to 4 photos or a PDF. Big phone photos are compressed automatically.</p>
+            <input type="file" id="fileInput" accept="image/*,.pdf" multiple>
+          </label>
+          <button type="button" class="btn btn-primary cam-btn" id="camBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:19px;height:19px"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.4"/></svg>
+            Take a photo
+          </button>
+          <input type="file" id="camInput" accept="image/*" capture="environment" hidden>
+          <div class="file-list" id="fileList" aria-live="polite"></div>
+          <div class="wiz-foot">
+            <button class="btn btn-ghost" data-back="1">Back</button>
+            <button class="btn btn-primary" id="toStep3" disabled>Continue</button>
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="wiz-pane" data-pane="3">
+          <h3>Who do we update?</h3>
+          <p class="hint">We'll confirm receipt and let you know the moment your order is out for delivery.</p>
+          <div class="field-row">
+            <div class="field">
+              <label for="cName">Contact name</label>
+              <div class="input-wrap"><span class="in-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></span><input id="cName" placeholder="Practice manager or nurse" autocomplete="name"></div>
+            </div>
+            <div class="field">
+              <label for="cEmail">Email or mobile</label>
+              <div class="input-wrap"><span class="in-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg></span><input id="cEmail" placeholder="you@clinic.com.au"></div>
+            </div>
+          </div>
+          <div class="wiz-warn" id="sendErr" role="alert"></div>
+          <div class="wiz-foot">
+            <button class="btn btn-ghost" data-back="2">Back</button>
+            <button class="btn btn-primary" id="submitWiz" disabled>Submit script</button>
+          </div>
+        </div>
+
+        <!-- SUCCESS -->
+        <div class="wiz-pane" data-pane="4">
+          <div class="success">
+            <span class="stamp">SCRIPT RECEIVED</span>
+            <h3 class="display">We've got it from here.</h3>
+            <p class="hint" style="margin:10px auto 0;max-width:46ch">Your script has been emailed to <b id="successPharm">the pharmacy</b> — <span class="mono" id="successEmail" style="font-size:13px"></span>. We'll be in touch if anything on it needs a check.</p>
+            <div class="ref" id="refCode">MDB-000000-0000</div>
+            <div class="timeline">
+              <div class="tl-step hit"><b>Received</b><span id="tNow">Today</span></div>
+              <div class="tl-step"><b>Dispensed</b><span>Today</span></div>
+              <div class="tl-step"><b>Out for delivery</b><span id="tEta">Next business day</span></div>
+            </div>
+            <div style="margin-top:34px"><button class="btn btn-ghost" id="restartWiz">Submit another script</button></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <p class="wiz-plain rv">Your script goes straight to your chosen pharmacy, with the photo attached — the team confirms once it's in. Prefer to email or fax it yourself? Contact details are at the bottom of the page.</p>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how">
+  <div class="wrap">
+    <div class="sec-head center rv">
+      <span class="eyebrow">How it works</span>
+      <h2 class="display">From script to surgery fridge in one business day.</h2>
+    </div>
+    <div class="steps">
+      <div class="step-card rv">
+        <span class="step-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.4"/></svg></span>
+        <h3>Photograph &amp; upload</h3>
+        <p>Snap your Dr's Bag prescription and submit it through the secure form. Every clinic and prescriber detail we need is already on the script — so there's nothing to register and no account to make.</p>
+        <div class="also">Also accepted: email · fax · scan</div>
+      </div>
+      <div class="step-card rv">
+        <span class="step-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="10" height="5" rx="1.5"/><path d="M7 8 5.5 21h13L17 8"/><path d="M9.5 14h5M12 11.5v5"/></svg></span>
+        <h3>We dispense it</h3>
+        <p>A PBS-licensed Direct Chemist Outlet pharmacy checks and dispenses your order the same day. If an item is short nationally, a pharmacist calls you with options before anything ships.</p>
+        <div class="also">Medicare-subsidised · best with 3–5+ items</div>
+      </div>
+      <div class="step-card rv">
+        <span class="step-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7h11v9H2zM13 10h5l4 3.5V16h-9"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/></svg></span>
+        <h3>Delivered free, tracked</h3>
+        <p>Local clinics get hand delivery. Everyone else gets free Express Post with daily tracking updates. Damaged in transit? We reship immediately at no cost.</p>
+        <div class="also">Metro next day · regional up to 3 days</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PHOTO BANNER ============ -->
+<section class="slim">
+  <div class="wrap">
+    <div class="photo-banner rv">
+      <div class="pb-art" aria-hidden="true">
+        <span class="pb-cross pbc-1"></span>
+        <span class="pb-cross pbc-2"></span>
+        <span class="pb-ring"></span>
+        <svg class="pb-vial pbv-1" viewBox="0 0 44 84" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"><rect x="12" y="2" width="20" height="9" rx="2.5"/><rect x="7" y="14" width="30" height="66" rx="7"/><path d="M22 40v9M17.5 44.5h9"/></svg>
+        <svg class="pb-vial pbv-2" viewBox="0 0 44 84" fill="none" stroke="rgba(255,255,255,.38)" stroke-width="2"><rect x="12" y="2" width="20" height="9" rx="2.5"/><rect x="7" y="14" width="30" height="66" rx="7"/><path d="M22 40v9M17.5 44.5h9"/></svg>
+        <svg class="pb-vial pbv-3" viewBox="0 0 44 84" fill="none" stroke="rgba(255,216,77,.55)" stroke-width="2"><rect x="12" y="2" width="20" height="9" rx="2.5"/><rect x="7" y="14" width="30" height="66" rx="7"/><path d="M22 40v9M17.5 44.5h9"/></svg>
+      </div>
+      <div class="pb-shade"></div>
+      <div class="pb-body">
+        <span class="eyebrow">Built for clinics</span>
+        <h2 class="display">Dedicated to doctors &amp; nurses — with 100+ PBS pharmacies behind you.</h2>
+        <a href="#upload" class="btn btn-primary">Upload your Dr's Bag</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COVERAGE ============ -->
+<section id="coverage" class="band-ink">
+  <div class="wrap">
+    <div class="sec-head center rv">
+      <span class="eyebrow">Coverage</span>
+      <h2 class="display" style="color:#fff">Hand-delivered locally.<br>Express-posted everywhere else.</h2>
+      <p class="lede">Pick the pharmacy nearest your clinic for the fastest turnaround — or just upload, and we'll route it for you.</p>
+    </div>
+    <div class="map-row rv">
+      <div id="auMap" role="img" aria-label="Map of Australia showing three Victorian pharmacies with hand delivery and Express Post everywhere else"></div>
+      <div>
+        <ul class="map-legend">
+          <li><span class="lg-dot y"></span><span><b>Hand delivery — Ballarat &amp; district</b>DCO Delacombe delivers to local clinics itself, typically next business day.</span></li>
+          <li><span class="lg-dot r"></span><span><b>Everywhere else — free Express Post</b>Securely packed, tracked daily. Metro next business day, regional up to 3 business days.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="cover-grid">
+      <div class="ph-card rv">
+        <span class="loc">Ballarat · VIC</span>
+        <h3>DCO Delacombe</h3>
+        <p>Delacombe Town Centre, Shop T15, 315 Glenelg Hwy, Delacombe VIC 3356</p>
+        <div class="mono-line">T (03) 5335 8388<br>F (03) 5339 8798<br><a href="mailto:delacombe@directchemistoutlet.com.au">delacombe@directchemistoutlet.com.au</a></div>
+      </div>
+      <div class="ph-card national rv">
+        <span class="loc">Everywhere else</span>
+        <h3>Australia-wide</h3>
+        <p>Everywhere else in Australia: dispensed at DCO Delacombe, securely packaged and shipped free by Australia Post Express with full tracking, updated daily.</p>
+        <div class="mono-line">Express Post · free · tracked</div>
+      </div>
+    </div>
+    <div class="deliv-note rv">
+      <span><b>Metro</b> — next business day</span>
+      <span><b>Interstate / regional</b> — up to 3 business days</span>
+      <span><b>Network</b> — 100+ PBS-licensed DCO pharmacies</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MEDICATIONS ============ -->
+<section id="meds">
+  <div class="wrap">
+    <div class="sec-head center rv">
+      <span class="eyebrow">What's covered</span>
+      <h2 class="display">Every item on the PBS prescriber bag list.</h2>
+      <p class="lede">The emergency medicines the PBS supplies to prescribers at no charge — stocked through Australia's largest pharmaceutical suppliers.</p>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="med-toolbar rv">
+      <div class="med-search">
+        <span class="in-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
+        <input id="medSearch" type="search" placeholder="Search a medicine…" aria-label="Search medicines">
+      </div>
+      <div class="med-filters" id="medFilters" role="group" aria-label="Filter by category"></div>
+    </div>
+    <div class="med-grid rv" id="medGrid"></div>
+    <div class="med-count" id="medCount"></div>
+    <div class="med-empty" id="medEmpty" hidden>No matches here — the full PBS list has every item.</div>
+    <div class="tape-cta rv">
+      <a class="btn-arrow primary" href="https://www.pbs.gov.au/browse/doctorsbag" target="_blank" rel="noopener"><span>Full PBS Dr's Bag list</span><span class="ba-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+      <a class="btn-arrow" href="https://www.servicesaustralia.gov.au/pb157" target="_blank" rel="noopener"><span>Order a script book (PB157)</span><span class="ba-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+      <span class="fine">Both links open the official Australian Government pages.</span>
+    </div>
+  </div>
+  </section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="band">
+  <div class="wrap">
+    <div class="sec-head center rv">
+      <span class="eyebrow">FAQ</span>
+      <h2 class="display">Questions clinics ask us.</h2>
+    </div>
+    <div class="faq-list rv">
+      <details open>
+        <summary>Is it really free? Any hidden costs? <span class="plus">＋</span></summary>
+        <p class="faq-a">Completely free. Dispensing, delivery — and if we post it, the Express Post is free too. Prescriber bag medicines are covered by the PBS, so there is no payment involved for your clinic at any point.</p>
+      </details>
+      <details>
+        <summary>Can we upload a script with just one item? <span class="plus">＋</span></summary>
+        <p class="faq-a">You can — but because we pay the Express Post ourselves, a 1–2 item order may not be able to be fulfilled: the postage can outweigh the order. Batching 3–5 items or more on the one upload means we can ship it free, every time. Need a single item urgently? Call the pharmacy and we'll sort it directly.</p>
+      </details>
+      <details>
+        <summary>Do we need to register or verify our clinic? <span class="plus">＋</span></summary>
+        <p class="faq-a">No sign-up required. Everything we need — clinic, prescriber and address details — is already on your Dr's Bag script. If we ever need anything more, a pharmacist contacts you directly.</p>
+      </details>
+      <details>
+        <summary>What if we're nowhere near one of your pharmacies? <span class="plus">＋</span></summary>
+        <p class="faq-a">We ship Australia-wide. Your order is securely packaged and sent free by Australia Post Express with tracking updated daily — next business day in metro areas, up to 3 business days interstate or regional.</p>
+      </details>
+      <details>
+        <summary>What happens if an item is out of stock? <span class="plus">＋</span></summary>
+        <p class="faq-a">We work with Australia's largest suppliers, so we'll first source it elsewhere. In a genuine nationwide shortage, a pharmacist calls you with the expected restock date — you choose whether to wait or drop the item from the order.</p>
+      </details>
+      <details>
+        <summary>What if a posted order arrives damaged? <span class="plus">＋</span></summary>
+        <p class="faq-a">We follow strict packaging guidelines, but in the unlikely event something arrives damaged, we reship your order immediately — free of charge.</p>
+      </details>
+      <details>
+        <summary>How is our information handled? <span class="plus">＋</span></summary>
+        <p class="faq-a">Uploads run through a secure, end-to-end encrypted submission form integrated with document-signing technology — the same platform trusted by major health organisations. Your data is used to fill the order and never retained.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTACT ============ -->
+<section id="contact">
+  <div class="wrap contact-band">
+    <div class="rv">
+      <span class="eyebrow">Contact</span>
+      <h2 class="display" style="margin:16px 0 14px">Prefer to talk to a pharmacist?</h2>
+      <p class="lede">Call, email or fax the dispensing pharmacy directly — especially if you need stock urgently today.</p>
+      <div class="hero-ctas" style="margin-top:26px">
+        <a href="tel:0353358388" class="btn btn-primary">Call (03) 5335 8388</a>
+        <a href="#upload" class="btn btn-ghost">Upload instead</a>
+      </div>
+    </div>
+    <div class="contact-card rv">
+      <div class="row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        <div><b>Direct Chemist Outlet Delacombe</b><span>Shop T15, 315 Glenelg Hwy, Delacombe VIC 3356</span></div>
+      </div>
+      <div class="row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z" opacity="0"/><path d="m4 7 8 6 8-6"/><rect x="4" y="5" width="16" height="14" rx="2"/></svg>
+        <div><b>Email a script</b><span>delacombe@directchemistoutlet.com.au</span></div>
+      </div>
+      <div class="row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 17v4h12v-4"/></svg>
+        <div><b>Fax</b><span>(03) 5339 8798 · Phone (03) 5335 8388</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="brand" style="margin-bottom:16px">
+          <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#FFD84D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M12 11v5M9.5 13.5h5"/></svg></span>
+          <span class="brand-name" style="color:#fff">My Dr's Bag<small style="color:#9DB4F0">BY DIRECT CHEMIST OUTLET</small></span>
+        </div>
+        <p style="max-width:38ch">Australia's express, free Doctor's Bag dispensing and delivery service for medical clinics — subscribe for updates across our expanding allied-health services.</p>
+      </div>
+      <div>
+        <h4>Service</h4>
+        <ul>
+          <li><a href="#upload">Upload a script</a></li>
+          <li><a href="#how">How it works</a></li>
+          <li><a href="#coverage">Coverage &amp; delivery times</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Official resources</h4>
+        <ul>
+          <li><a href="https://www.pbs.gov.au/browse/doctorsbag" target="_blank" rel="noopener">PBS Dr's Bag drug list ↗</a></li>
+          <li><a href="https://www.servicesaustralia.gov.au/pb157" target="_blank" rel="noopener">Order Dr's Bag book (PB157) ↗</a></li>
+          <li><a href="#contact">Contact the pharmacy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-legal">
+      <span>© 2026 MY DR'S BAG · ACN 670 164 717</span>
+      <span>PARTNERED WITH DIRECT CHEMIST OUTLET PTY LTD</span>
+    </div>
+  </div>
+</footer>
+
+<div class="mob-cta"><a href="#upload" class="btn btn-primary">Upload your Dr's Bag script</a></div>
+<script>
+(function(){
+  "use strict";
+
+  /* ---- hero stamp cycle ---- */
+  var stamp=document.getElementById("statusStamp");
+  var states=["RECEIVED 09:41","DISPENSED 10:07","OUT FOR DELIVERY"];
+  var si=0;
+  if(stamp && !matchMedia("(prefers-reduced-motion: reduce)").matches && !document.querySelector(".phone")){
+    setInterval(function(){
+      si=(si+1)%states.length;
+      stamp.style.opacity="0";
+      setTimeout(function(){ stamp.textContent=states[si]; stamp.style.opacity="1"; stamp.classList.remove("pop"); void stamp.offsetWidth; stamp.classList.add("pop"); },300);
+    },2600);
+  }
+
+  /* ---- scroll reveal ---- */
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target);} });
+  },{threshold:.12});
+  document.querySelectorAll(".rv").forEach(function(el){ io.observe(el); });
+
+  /* ============ WIZARD ============ */
+  var wiz=document.getElementById("wizard");
+  if(!wiz) return;
+
+  var routed=null;
+
+  function show(n){
+    wiz.querySelectorAll(".wiz-pane").forEach(function(p){ p.classList.toggle("on", p.dataset.pane==String(n)); });
+    wiz.querySelectorAll(".rail-step").forEach(function(r){
+      var rn=+r.dataset.rail, cur=Math.min(n,3);
+      r.classList.toggle("active", rn===cur);
+      r.classList.toggle("done", rn<cur || n===4);
+    });
+    if(n!==4) wiz.scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
+
+  /* ---- step 1: pharmacy tabs + postcode routing ---- */
+  /* ADMIN NOTE (not shown to clinics): every script — local and
+     Australia-wide — emails delacombe@directchemistoutlet.com.au.
+     The very first submission triggers a one-time FormSubmit
+     "confirm" email to that inbox; click it once and all future
+     scripts flow straight through. */
+  var PHARM={
+    delacombe:{label:"DCO Delacombe (Ballarat)",
+      detail:"Delacombe Town Centre, 315 Glenelg Hwy — hand delivery to your clinic.",
+      eta:"Hand delivery · usually next business day",
+      email:"delacombe@directchemistoutlet.com.au"},
+    national:{label:"Australia-wide Express Post",
+      detail:"Dispensed at DCO Delacombe, securely packed and shipped free with tracking.",
+      eta:"Express Post · metro next day, regional up to 3 days",
+      email:"delacombe@directchemistoutlet.com.au"}
+  };
+  var FALLBACK_EMAIL=PHARM.delacombe.email;
+  function emailFor(k){ return (PHARM[k]&&PHARM[k].email)||FALLBACK_EMAIL; }
+
+  var pcode=document.getElementById("pcode"),
+      clinicName=document.getElementById("clinicName"),
+      rr=document.getElementById("routeResult"),
+      toStep2=document.getElementById("toStep2"),
+      pcodeField=document.getElementById("pcodeField"),
+      tabs=document.querySelectorAll(".loc-tab"),
+      mode="auto", routedKey=null;
+
+  function pcToKey(p){
+    if(p>=3350&&p<=3357) return "delacombe";
+    return "national";
+  }
+  function paint(){
+    if(routedKey){
+      var ph=PHARM[routedKey];
+      document.getElementById("routeName").textContent=ph.label;
+      document.getElementById("routeDetail").textContent=ph.detail;
+      document.getElementById("routeEta").textContent=ph.eta;
+      document.getElementById("routeEmail").textContent="Goes to: "+emailFor(routedKey);
+      rr.classList.add("on");
+    } else { rr.classList.remove("on"); }
+    toStep2.disabled=!(routedKey && clinicName.value.trim().length>1);
+  }
+  function route(){
+    var v=pcode.value.replace(/\D/g,"").slice(0,4);
+    pcode.value=v;
+    routedKey=(mode==="auto") ? (v.length===4 ? pcToKey(+v) : null) : mode;
+    paint();
+  }
+  tabs.forEach(function(t){
+    t.addEventListener("click",function(){
+      tabs.forEach(function(o){ o.classList.remove("sel"); });
+      t.classList.add("sel");
+      mode=t.dataset.loc;
+      pcodeField.hidden=(mode!=="auto");
+      route();
+    });
+  });
+  pcode.addEventListener("input",route);
+  clinicName.addEventListener("input",route);
+  toStep2.addEventListener("click",function(){ show(2); });
+
+  /* ---- step 2: multi-photo drop with auto-compression ---- */
+  var drop=document.getElementById("drop"),
+      fileInput=document.getElementById("fileInput"),
+      fileList=document.getElementById("fileList"),
+      toStep3=document.getElementById("toStep3"),
+      FILES=[], MAXF=4;
+
+  function fmtMB(b){ return (b/1048576).toFixed(2)+" MB"; }
+
+  function compressImage(file){
+    return new Promise(function(res){
+      if(file.type==="application/pdf"||file.type.indexOf("image")!==0){
+        res({name:file.name,blob:file,orig:file.size}); return;
+      }
+      var url=URL.createObjectURL(file), img=new Image();
+      img.onload=function(){
+        var sc=Math.min(1,1600/Math.max(img.width,img.height)),
+            c=document.createElement("canvas");
+        c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
+        c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+        c.toBlob(function(b){
+          URL.revokeObjectURL(url);
+          if(b&&b.size<file.size) res({name:file.name.replace(/\.[^.]+$/,"")+".jpg",blob:b,orig:file.size});
+          else res({name:file.name,blob:file,orig:file.size});
+        },"image/jpeg",.82);
+      };
+      img.onerror=function(){ URL.revokeObjectURL(url); res({name:file.name,blob:file,orig:file.size}); };
+      img.src=url;
+    });
+  }
+
+  function renderFiles(){
+    fileList.innerHTML="";
+    FILES.forEach(function(f,idx){
+      var chip=document.createElement("div"); chip.className="fchip";
+      var im=document.createElement("img");
+      if(f.blob.type&&f.blob.type.indexOf("image")===0){ im.src=URL.createObjectURL(f.blob); }
+      else { im.style.display="none"; }
+      var fn=document.createElement("span"); fn.className="fn"; fn.textContent=f.name;
+      var fs=document.createElement("span"); fs.className="fs";
+      fs.textContent=fmtMB(f.blob.size)+(f.orig>f.blob.size*1.15?" · compressed":"");
+      var bx=document.createElement("button"); bx.type="button"; bx.textContent="✕"; bx.setAttribute("aria-label","Remove "+f.name);
+      bx.addEventListener("click",function(){ FILES.splice(idx,1); renderFiles(); });
+      chip.appendChild(im); chip.appendChild(fn); chip.appendChild(fs); chip.appendChild(bx);
+      fileList.appendChild(chip);
+    });
+    toStep3.disabled=FILES.length===0;
+  }
+
+  function addFiles(list){
+    var room=MAXF-FILES.length;
+    [].slice.call(list,0,room).forEach(function(file){
+      compressImage(file).then(function(f){ FILES.push(f); renderFiles(); });
+    });
+  }
+  function resetFiles(){ FILES=[]; fileInput.value=""; renderFiles(); }
+
+  fileInput.addEventListener("change",function(){ addFiles(fileInput.files); fileInput.value=""; });
+  var camInput=document.getElementById("camInput"), camBtn=document.getElementById("camBtn");
+  if(camBtn&&camInput){
+    camBtn.addEventListener("click",function(){ camInput.click(); });
+    camInput.addEventListener("change",function(){ addFiles(camInput.files); camInput.value=""; });
+  }
+  ["dragenter","dragover"].forEach(function(ev){
+    drop.addEventListener(ev,function(e){ e.preventDefault(); drop.classList.add("dragover"); });
+  });
+  ["dragleave","drop"].forEach(function(ev){
+    drop.addEventListener(ev,function(e){ e.preventDefault(); drop.classList.remove("dragover"); });
+  });
+  drop.addEventListener("drop",function(e){
+    if(e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
+  });
+  toStep3.addEventListener("click",function(){ show(3); });
+
+  /* ---- step 3: confirm ---- */
+  var cName=document.getElementById("cName"),
+      cEmail=document.getElementById("cEmail"),
+      submitWiz=document.getElementById("submitWiz");
+  function checkC(){ submitWiz.disabled=!(cName.value.trim().length>1 && cEmail.value.trim().length>4); }
+  cName.addEventListener("input",checkC);
+  cEmail.addEventListener("input",checkC);
+
+  submitWiz.addEventListener("click",function(){
+    var d=new Date(),
+        pad=function(x){ return String(x).padStart(2,"0"); },
+        ymd=String(d.getFullYear()).slice(2)+pad(d.getMonth()+1)+pad(d.getDate()),
+        ref="MDB-"+ymd+"-"+Math.random().toString(36).slice(2,6).toUpperCase(),
+        key=routedKey||"national",
+        to=emailFor(key),
+        err=document.getElementById("sendErr"),
+        sel=document.querySelector(".count-chip.sel");
+    err.classList.remove("on");
+    submitWiz.disabled=true; submitWiz.textContent="Sending…";
+
+    var fd=new FormData();
+    fd.append("_subject","Dr's Bag script "+ref+" — "+clinicName.value.trim());
+    fd.append("_template","table");
+    fd.append("_captcha","false");
+    fd.append("Reference",ref);
+    fd.append("Clinic",clinicName.value.trim());
+    fd.append("Postcode",pcode.value||"—");
+    fd.append("Pharmacy",PHARM[key].label);
+    fd.append("Items on script",sel?sel.textContent.trim():"Not stated");
+    fd.append("Contact name",cName.value.trim());
+    fd.append("Contact email or mobile",cEmail.value.trim());
+    fd.append("_honey","");
+    FILES.forEach(function(f,fi){ fd.append("script_photo_"+(fi+1), f.blob, f.name); });
+    fd.append("Photos attached", String(FILES.length));
+
+    fetch("https://formsubmit.co/ajax/"+to,{method:"POST",body:fd,headers:{Accept:"application/json"}})
+      .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function(){
+        document.getElementById("refCode").textContent=ref;
+        document.getElementById("successPharm").textContent=PHARM[key].label;
+        document.getElementById("successEmail").textContent=to;
+        document.getElementById("tNow").textContent=d.toLocaleDateString("en-AU",{weekday:"short",day:"numeric",month:"short"});
+        show(4);
+      })
+      .catch(function(){
+        err.classList.add("on");
+        err.innerHTML='<b>Couldn&#39;t send from here.</b> Email the script directly to <a href="mailto:'+to+'?subject=Dr%27s%20Bag%20script%20'+ref+'" style="color:inherit">'+to+'</a> — or try again with the page open in your browser (chat previews block outbound email).';
+      })
+      .finally(function(){ submitWiz.disabled=false; submitWiz.textContent="Submit script"; });
+  });
+
+  /* ---- back / restart ---- */
+  wiz.querySelectorAll("[data-back]").forEach(function(b){
+    b.addEventListener("click",function(){ show(+b.dataset.back); });
+  });
+  document.getElementById("restartWiz").addEventListener("click",function(){
+    document.getElementById("sendErr").classList.remove("on");
+    resetFiles();
+    cName.value=""; cEmail.value=""; submitWiz.disabled=true;
+    show(1);
+  });
+
+  /* ---- FAQ: one open at a time ---- */
+  var faqs=document.querySelectorAll(".faq-list details");
+  faqs.forEach(function(d){
+    d.addEventListener("toggle",function(){
+      if(d.open) faqs.forEach(function(o){ if(o!==d) o.open=false; });
+    });
+  });
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var rm=matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---- bulk meter ---- */
+  var sl=document.getElementById("bulkSlider");
+  if(sl){
+    var parcelEl=document.getElementById("parcel");
+    if(parcelEl){
+      var VIAL='<svg viewBox="0 0 44 84" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
+        +'<rect x="12" y="2" width="20" height="9" rx="2.5" fill="#1B3C87"/>'
+        +'<rect x="14" y="10" width="16" height="4.5" rx="1.5" fill="#8FA6D9"/>'
+        +'<rect x="7" y="14" width="30" height="66" rx="7" fill="#FFFFFF" stroke="#C7D2E8" stroke-width="1.5"/>'
+        +'<rect x="11" y="19" width="4" height="55" rx="2" fill="#EDF2FB"/>'
+        +'<rect x="10" y="34" width="24" height="27" rx="3" fill="#F7F9FD" stroke="#DDE5F3"/>'
+        +'<path d="M22 40v9M17.5 44.5h9" stroke="#1B3C87" stroke-width="2.4" stroke-linecap="round"/>'
+        +'<rect x="14" y="53" width="16" height="2.4" rx="1.2" fill="#C4CEE4"/>'
+        +'<rect x="16" y="57" width="12" height="2.4" rx="1.2" fill="#D7DFEF"/>'
+        +'</svg>';
+      var vhtml="";
+      for(var vi=0;vi<8;vi++){ vhtml+='<span class="vial">'+VIAL+'</span>'; }
+      parcelEl.innerHTML=vhtml;
+    }
+    var vials=[].slice.call(document.querySelectorAll(".vial")),
+        bn=document.getElementById("bn"), bl=document.getElementById("bl"),
+        vd=document.getElementById("verdict"), touched=false;
+    function setN(n){
+      n=Math.max(1,Math.min(8,n)); sl.value=n;
+      vials.forEach(function(v,i){ v.classList.toggle("on", i<n); });
+      bn.textContent=n;
+      bl.textContent=(n===1?"item":"items")+" on script";
+      if(n<3){ vd.textContent="Too small — may not be fulfilled"; vd.className="verdict bad"; }
+      else{ vd.textContent="Free Express Post — every time"; vd.className="verdict good"; }
+    }
+    sl.addEventListener("input",function(){ touched=true; setN(+sl.value); });
+    setN(1);
+    var bio=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(!e.isIntersecting) return; bio.disconnect();
+        if(rm){ setN(5); return; }
+        var n=1, t=setInterval(function(){
+          if(touched||n>=5){ clearInterval(t); return; } setN(++n);
+        },520);
+      });
+    },{threshold:.45});
+    bio.observe(sl);
+  }
+
+  /* ---- wizard item-count nudge ---- */
+  var chips=document.querySelectorAll(".count-chip"),
+      warn=document.getElementById("wizWarn");
+  chips.forEach(function(c){
+    c.addEventListener("click",function(){
+      chips.forEach(function(o){ o.classList.remove("sel"); });
+      c.classList.add("sel");
+      var few=c.dataset.count==="few";
+      warn.classList.add("on");
+      warn.classList.toggle("good",!few);
+      warn.innerHTML = few
+        ? "<b>Heads up —</b> we pay the Express Post ourselves, so a 1–2 item script may not be able to be fulfilled. If you can, batch it up to 3–5+ items on the one upload."
+        : "<b>Perfect —</b> that\u2019s well worth the free post. We\u2019ll get it moving.";
+    });
+  });
+
+  /* ---- script card tilt ---- */
+  var stage=document.querySelector(".script-stage"), card=document.querySelector(".script");
+  if(stage&&card&&!rm&&matchMedia("(pointer:fine)").matches){
+    stage.addEventListener("pointermove",function(e){
+      var r=stage.getBoundingClientRect(),
+          dx=(e.clientX-r.left)/r.width-.5, dy=(e.clientY-r.top)/r.height-.5;
+      card.style.transform="rotate(1.2deg) rotateY("+(dx*7).toFixed(2)+"deg) rotateX("+(-dy*6).toFixed(2)+"deg)";
+    });
+    stage.addEventListener("pointerleave",function(){ card.style.transform=""; });
+  }
+
+  /* ---- HERO WOW ---- */
+  (function(){
+    var hero=document.querySelector(".hero");
+    if(!hero) return;
+
+    /* keynote word entrance */
+    var h1=hero.querySelector("h1");
+    if(h1&&!rm){
+      var nodes=[].slice.call(h1.childNodes), idx=0, base=.15;
+      h1.innerHTML="";
+      nodes.forEach(function(nd){
+        if(nd.nodeType===3){
+          nd.textContent.split(/\s+/).forEach(function(w){
+            if(!w) return;
+            var sp=document.createElement("span");
+            sp.className="w"; sp.textContent=w;
+            sp.style.animationDelay=(base+idx*.09)+"s";
+            h1.appendChild(sp); h1.appendChild(document.createTextNode(" ")); idx++;
+          });
+        }else if(nd.nodeType===1){
+          if(nd.tagName==="BR"){ h1.appendChild(nd); return; }
+          nd.classList.add("w");
+          nd.style.animationDelay=(base+idx*.09)+"s";
+          h1.appendChild(nd); h1.appendChild(document.createTextNode(" ")); idx++;
+        }
+      });
+      h1.classList.add("split");
+    }
+
+    /* cursor spotlight */
+    if(matchMedia("(pointer:fine)").matches&&!rm){
+      hero.addEventListener("pointermove",function(e){
+        var r=hero.getBoundingClientRect();
+        hero.style.setProperty("--mx",((e.clientX-r.left)/r.width*100).toFixed(1)+"%");
+        hero.style.setProperty("--my",((e.clientY-r.top)/r.height*100).toFixed(1)+"%");
+      });
+    }
+
+    /* magnetic primary CTA */
+    var mag=hero.querySelector(".hero-ctas .btn-primary");
+    if(mag&&!rm&&matchMedia("(pointer:fine)").matches){
+      hero.addEventListener("pointermove",function(e){
+        var r=mag.getBoundingClientRect(),
+            cx=r.left+r.width/2, cy=r.top+r.height/2,
+            dx=e.clientX-cx, dy=e.clientY-cy,
+            d=Math.hypot(dx,dy);
+        if(d<130){
+          var pull=(130-d)/130;
+          mag.style.transform="translate("+(dx*.16*pull).toFixed(1)+"px,"+(dy*.16*pull).toFixed(1)+"px) scale("+(1+.035*pull).toFixed(3)+")";
+        }else{ mag.style.transform=""; }
+      });
+      hero.addEventListener("pointerleave",function(){ mag.style.transform=""; });
+    }
+
+    /* gentle scroll parallax */
+    if(!rm){
+      var ticking=false;
+      window.addEventListener("scroll",function(){
+        if(ticking) return; ticking=true;
+        requestAnimationFrame(function(){
+          var y=Math.min(window.scrollY,600);
+          hero.style.setProperty("--py",(y*.055).toFixed(1)+"px");
+          hero.style.setProperty("--pt",(y*-.025).toFixed(1)+"px");
+          ticking=false;
+        });
+      },{passive:true});
+    }
+  })();
+
+  /* ---- upload demo machine ---- */
+  (function(){
+    var stg=document.querySelector(".script-stage");
+    if(!stg||rm) return;
+    var heroEl=document.querySelector(".hero"), heroVis=true;
+    new IntersectionObserver(function(es){
+      es.forEach(function(e){ heroVis=e.isIntersecting; heroEl.classList.toggle("offstage",!heroVis); });
+    },{threshold:.05}).observe(heroEl);
+    var stamp2=document.getElementById("statusStamp"),
+        items=stg.querySelector(".script-items"),
+        caps=stg.querySelectorAll(".demo-cap span"),
+        seq=[
+          {c:"demo-s1",t:1600,cap:1},
+          {c:"demo-s1 flash",t:430,cap:1},
+          {c:"demo-s2",t:1450,cap:2},
+          {c:"demo-s2 demo-s2b",t:1750,cap:2,stamp:"RECEIVED 09:41"},
+          {c:"demo-s3",t:2650,cap:3,stamp:"DISPENSED 10:07",replay:true},
+          {c:"demo-s4",t:2400,cap:3,stamp:"OUT FOR DELIVERY"}
+        ], k=0;
+    function setStamp(txt){
+      if(!stamp2) return;
+      stamp2.style.opacity="0";
+      setTimeout(function(){
+        stamp2.textContent=txt; stamp2.style.opacity="1";
+        stamp2.classList.remove("pop"); void stamp2.offsetWidth; stamp2.classList.add("pop");
+      },260);
+    }
+    function step(){
+      if(!heroVis){ setTimeout(step,900); return; }
+      var st=seq[k];
+      stg.className="script-stage "+st.c;
+      caps.forEach(function(c,i){ c.classList.toggle("on", i===st.cap-1); });
+      if(st.stamp) setStamp(st.stamp);
+      if(st.replay&&items){ items.classList.remove("replay"); void items.offsetWidth; items.classList.add("replay"); }
+      k=(k+1)%seq.length;
+      setTimeout(step,st.t);
+    }
+    setTimeout(step,1000);
+  })();
+
+  /* ---- prescriber bag directory ---- */
+  var medGrid=document.getElementById("medGrid");
+  if(medGrid){
+    var MEDS=[
+      {n:"Adrenaline (epinephrine) 1:1000",f:"Injection · ampoule",c:"allergy"},
+      {n:"Hydrocortisone",f:"Injection · vial",c:"allergy"},
+      {n:"Promethazine",f:"Injection · ampoule",c:"allergy"},
+      {n:"Atropine sulfate",f:"Injection · ampoule",c:"cardiac"},
+      {n:"Glyceryl trinitrate",f:"Sublingual spray",c:"cardiac"},
+      {n:"Diazepam",f:"Injection · ampoule",c:"neuro"},
+      {n:"Haloperidol",f:"Injection · ampoule",c:"neuro"},
+      {n:"Benzatropine",f:"Injection · ampoule",c:"neuro"},
+      {n:"Glucagon",f:"Injection · kit",c:"other"},
+      {n:"Naloxone",f:"Injection · ampoule",c:"other"},
+      {n:"Metoclopramide",f:"Injection · ampoule",c:"other"},
+      {n:"Dexamethasone",f:"Injection · vial",c:"other"}
+    ];
+    var CATS=[["all","All"],["allergy","Allergy & anaphylaxis"],["cardiac","Cardiac"],["neuro","Sedation & neuro"],["other","Other emergencies"]];
+    var CATLBL={}; CATS.forEach(function(c){CATLBL[c[0]]=c[1];});
+    var medFilters=document.getElementById("medFilters"),
+        medSearch=document.getElementById("medSearch"),
+        medCount=document.getElementById("medCount"),
+        medEmpty=document.getElementById("medEmpty"),
+        activeCat="all",
+        SYR='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m18 2 4 4"/><path d="m14 4 6 6"/><path d="M12 6l6 6-8.5 8.5H6v-3.5L14.5 8.5"/><path d="m5 19-3 3"/></svg>';
+    CATS.forEach(function(c){
+      var b=document.createElement("button");
+      b.type="button"; b.className="mfilter"+(c[0]==="all"?" sel":""); b.textContent=c[1]; b.dataset.c=c[0];
+      b.addEventListener("click",function(){
+        activeCat=c[0];
+        medFilters.querySelectorAll(".mfilter").forEach(function(o){o.classList.remove("sel");});
+        b.classList.add("sel"); medFilter();
+      });
+      medFilters.appendChild(b);
+    });
+    MEDS.forEach(function(m){
+      var card=document.createElement("div");
+      card.className="med-card"; card.dataset.c=m.c;
+      card.innerHTML='<span class="mc-ico">'+SYR+'</span><div class="mc-body"><b>'+m.n+'</b><span class="mf">'+m.f+'</span></div><i class="mc-tag">'+CATLBL[m.c]+'</i>';
+      medGrid.appendChild(card);
+    });
+    function medFilter(){
+      var q=(medSearch.value||"").trim().toLowerCase(), shown=0;
+      medGrid.querySelectorAll(".med-card").forEach(function(card){
+        var hit=(activeCat==="all"||card.dataset.c===activeCat) &&
+                (!q || card.querySelector("b").textContent.toLowerCase().indexOf(q)>-1);
+        card.hidden=!hit; if(hit) shown++;
+      });
+      medCount.textContent=shown+" of "+MEDS.length+" medicines";
+      medEmpty.hidden=shown!==0;
+    }
+    medSearch.addEventListener("input",medFilter);
+    medFilter();
+  }
+
+  /* ---- Australia dot map ---- */
+  var map=document.getElementById("auMap");
+  if(map){
+    var G=[
+      "..........####..##......",
+      ".........#####..##......",
+      "......########..###.....",
+      "...###########.#####....",
+      ".####################...",
+      "######################..",
+      "########################",
+      "########################",
+      "########################",
+      "######......##########..",
+      "............#########...",
+      "...............#####....",
+      "........................",
+      ".................###...."
+    ], W=24, hotR=11, hotC=17, hotEl=null;
+    map.style.gridTemplateColumns="repeat("+W+",9px)";
+    G.forEach(function(row,r){
+      for(var c=0;c<W;c++){
+        var d=document.createElement("i");
+        d.className="mdot";
+        if(row[c]!=="#"){ d.style.visibility="hidden"; }
+        if(r===hotR&&c===hotC){ d.classList.add("hot"); hotEl=d; }
+        map.appendChild(d);
+      }
+    });
+    if(hotEl){
+      var ring=document.createElement("span"); ring.className="map-ring";
+      var tag=document.createElement("span"); tag.className="map-tag"; tag.textContent="Delacombe \u00B7 hand delivery";
+      map.appendChild(ring); map.appendChild(tag);
+      var place=function(){
+        var x=hotEl.offsetLeft+4.5, y=hotEl.offsetTop+4.5;
+        ring.style.left=x+"px"; ring.style.top=y+"px";
+        tag.style.left=(x+9)+"px"; tag.style.top=y+"px";
+      };
+      requestAnimationFrame(place);
+      window.addEventListener("resize",place);
+    }
+  }
+})();
+</script>
+</body>
+</html>
