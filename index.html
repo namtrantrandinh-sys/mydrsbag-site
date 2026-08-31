@@ -1200,6 +1200,84 @@ footer{padding:76px 0 48px;font-size:13.5px}
 /* v17 — two-destination coverage layout */
 .cover-grid{grid-template-columns:repeat(2,1fr);max-width:900px}
 
+
+/* ============================================================
+   v18 — hero art direction: composed, grounded, human
+   ============================================================ */
+/* tighter, deliberate cluster */
+.phone{left:-118px;bottom:-8px;width:188px;height:372px;z-index:4;
+  transform:translateY(26px) rotate(-7deg)}
+@keyframes phoneIn{to{opacity:1;transform:rotate(-7deg)}}
+@keyframes phFloat{from{transform:rotate(-7deg) translateY(0)}to{transform:rotate(-7deg) translateY(-6px)}}
+.sat-r{right:-98px;top:26px}
+.sat-l{right:-106px;bottom:40px}
+.demo-cap{margin-top:34px}
+
+/* grounding shadow + editorial dot grid */
+.stage-ground{position:absolute;left:4%;right:4%;bottom:-14px;height:38px;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(15,30,69,.3),transparent 68%);filter:blur(14px)}
+.script-stage::after{content:"";position:absolute;inset:-48px -70px;z-index:-1;pointer-events:none;
+  background-image:radial-gradient(rgba(27,60,135,.15) 1.2px,transparent 1.3px);background-size:22px 22px;
+  -webkit-mask-image:radial-gradient(closest-side,#000 30%,transparent 80%);
+  mask-image:radial-gradient(closest-side,#000 30%,transparent 80%)}
+
+/* phone hardware */
+.ph-btn-side{position:absolute;right:-2.5px;width:3px;border-radius:2px;background:#0A1530}
+.b1{top:84px;height:30px}.b2{top:122px;height:30px}.b3{top:64px;height:16px;left:-2.5px;right:auto}
+.ph-status{position:absolute;top:9px;left:16px;right:16px;display:flex;justify-content:space-between;align-items:center;z-index:2}
+.ph-status i{font-family:var(--font-body);font-style:normal;font-size:10.5px;font-weight:600;color:#fff;letter-spacing:.02em}
+.ph-status em{width:20px;height:9px;border:1.2px solid rgba(255,255,255,.8);border-radius:3px;position:relative;opacity:.9}
+.ph-status em::after{content:"";position:absolute;inset:1.5px;right:5px;background:#fff;border-radius:1px}
+
+/* camera preview that looks like a camera */
+.ps-1{background:linear-gradient(180deg,#0A1633 0%,#101F44 55%,#0B1735 100%);justify-content:flex-end;gap:12px;padding-bottom:16px}
+.cam-frame{position:absolute;inset:34px 15px 78px;border-radius:16px;overflow:hidden;
+  background:
+    radial-gradient(120% 90% at 50% 0%,rgba(255,255,255,.09),transparent 55%),
+    linear-gradient(180deg,#22335E,#182849)}
+.cf-doc{position:absolute;left:50%;top:50%;width:74px;height:96px;transform:translate(-50%,-52%) rotate(-3deg);
+  background:#fff;border-radius:7px;box-shadow:0 10px 24px -8px rgba(0,0,0,.5)}
+.cfd-head{position:absolute;top:0;left:0;right:0;height:9px;border-radius:7px 7px 0 0;
+  background:linear-gradient(90deg,#1B3C87 0 70%,#FFC907 70%)}
+.cfd-cross{position:absolute;top:18px;left:10px;width:14px;height:14px}
+.cfd-cross::before,.cfd-cross::after{content:"";position:absolute;background:#1B3C87;border-radius:2px}
+.cfd-cross::before{left:50%;top:0;width:3.4px;height:100%;transform:translateX(-50%)}
+.cfd-cross::after{top:50%;left:0;height:3.4px;width:100%;transform:translateY(-50%)}
+.cfd-l{position:absolute;left:10px;right:12px;height:3.4px;border-radius:2px;background:#D4DCEE}
+.l1{top:44px}.l2{top:54px;right:22px}.l3{top:64px;right:30px}
+.cf-corner{position:absolute;width:16px;height:16px;border:2.2px solid rgba(255,255,255,.85)}
+.c1{top:10px;left:10px;border-right:none;border-bottom:none;border-radius:5px 0 0 0}
+.c2{top:10px;right:10px;border-left:none;border-bottom:none;border-radius:0 5px 0 0}
+.c3{bottom:10px;left:10px;border-right:none;border-top:none;border-radius:0 0 0 5px}
+.c4{bottom:10px;right:10px;border-left:none;border-top:none;border-radius:0 0 5px 0}
+.cf-focus{position:absolute;left:50%;top:50%;width:56px;height:56px;transform:translate(-50%,-50%);
+  border:1.6px solid #FFD84D;border-radius:8px;opacity:0;animation:cfFocus 4.2s ease-in-out infinite}
+@keyframes cfFocus{0%,55%,100%{opacity:0;transform:translate(-50%,-50%) scale(1.25)}62%,80%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+.shutter{position:static;transform:none;width:40px;height:40px;border:3px solid #fff;background:transparent;box-shadow:none;position:relative}
+.shutter::after{content:"";position:absolute;inset:4px;border-radius:50%;background:#fff}
+.ps-1 .ph-label{position:static}
+
+/* script card: designed, not templated */
+.script::before{height:5px;background:linear-gradient(90deg,var(--navy),#3E66C7 62%,var(--sun))}
+.script-clinic{font-family:var(--font-body);text-align:center;padding:16px 22px 15px}
+.sc-name{display:block;font-family:var(--font-display);font-size:17.5px;font-weight:650;letter-spacing:-.015em;margin-bottom:3px}
+.sc-sub{display:block;font-size:12.5px;color:#5A6478;letter-spacing:.01em;line-height:1.6}
+.head-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.sample-tag{font-style:normal;font-family:var(--font-body);font-size:9.5px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;color:#8A96B5;background:#EEF2FA;border:1px solid #E0E7F4;border-radius:99px;padding:2px 8px}
+
+/* stamp → modern status pill */
+.stamp{font-family:var(--font-body);font-size:12.5px;font-weight:600;letter-spacing:.01em;text-transform:none;
+  color:var(--navy-deep);background:rgba(27,60,135,.09);border:1px solid rgba(27,60,135,.18);border-radius:99px;
+  padding:7px 13px 7px 26px;transform:none;position:relative}
+.stamp::before{content:"";position:absolute;left:11px;top:50%;transform:translateY(-50%);
+  width:7px;height:7px;border-radius:50%;background:var(--sun);
+  box-shadow:0 0 0 0 rgba(255,201,7,.5);animation:hotpulse 2s infinite}
+.stamp.pop{animation:pillPop .4s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pillPop{from{transform:scale(1.16)}to{transform:scale(1)}}
+.success .stamp{padding:9px 16px 9px 30px;font-size:13.5px}
+@media (max-width:640px){.script-stage::after{inset:-24px -20px}}
+
 </style>
 </head>
 <body>
@@ -1256,12 +1334,23 @@ footer{padding:76px 0 48px;font-size:13.5px}
     </div>
 
     <div class="script-stage">
+      <span class="stage-ground" aria-hidden="true"></span>
       <aside class="phone" aria-hidden="true">
+        <span class="ph-btn-side b1"></span><span class="ph-btn-side b2"></span><span class="ph-btn-side b3"></span>
         <span class="ph-notch"></span>
         <div class="ph-screen">
           <div class="ps ps-1">
-            <span class="vf"></span>
-            <span class="mini-doc md-cam"></span>
+            <span class="ph-status"><i>9:41</i><em></em></span>
+            <span class="cam-frame">
+              <span class="cf-doc">
+                <span class="cfd-head"></span>
+                <span class="cfd-cross"></span>
+                <span class="cfd-l l1"></span><span class="cfd-l l2"></span><span class="cfd-l l3"></span>
+              </span>
+              <span class="cf-corner c1"></span><span class="cf-corner c2"></span>
+              <span class="cf-corner c3"></span><span class="cf-corner c4"></span>
+              <span class="cf-focus"></span>
+            </span>
             <span class="shutter"></span>
             <span class="ph-label">Photograph your script</span>
           </div>
@@ -1293,12 +1382,12 @@ footer{padding:76px 0 48px;font-size:13.5px}
       <article class="script" aria-label="Example prescriber bag order being processed">
         <div class="script-head">
           <span class="t">PBS PRESCRIBER BAG</span>
-          <span class="n" id="scriptRef">REF MDB-260828</span>
+          <span class="head-right"><span class="n" id="scriptRef">REF MDB-260828</span><i class="sample-tag">Sample order</i></span>
         </div>
         <div class="script-clinic">
-          <b>GLENELG FAMILY PRACTICE</b><br>
-          DR A. NGUYEN · PRESCRIBER № 245XXXX<br>
-          DELACOMBE VIC 3356
+          <b class="sc-name">Glenelg Family Practice</b>
+          <span class="sc-sub">Dr A. Nguyen · Prescriber 245XXXX</span>
+          <span class="sc-sub">Delacombe VIC 3356</span>
         </div>
         <div class="script-items">
           <div class="scanline" aria-hidden="true"></div>
@@ -1308,7 +1397,7 @@ footer{padding:76px 0 48px;font-size:13.5px}
           <div class="s-item"><span class="s-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 10 18 20 6"/></svg></span><span class="s-name">Glyceryl trinitrate spray</span><span class="s-qty">×1</span></div>
         </div>
         <div class="script-foot">
-          <span class="stamp" id="statusStamp">RECEIVED 09:41</span>
+          <span class="stamp" id="statusStamp">Received 9:41</span>
           <div class="cost"><b>$0.00</b><span>COST TO CLINIC</span></div>
         </div>
       </article>
@@ -1744,7 +1833,7 @@ footer{padding:76px 0 48px;font-size:13.5px}
 
   /* ---- hero stamp cycle ---- */
   var stamp=document.getElementById("statusStamp");
-  var states=["RECEIVED 09:41","DISPENSED 10:07","OUT FOR DELIVERY"];
+  var states=["Received 9:41","Dispensed 10:07","Out for delivery"];
   var si=0;
   if(stamp && !matchMedia("(prefers-reduced-motion: reduce)").matches && !document.querySelector(".phone")){
     setInterval(function(){
@@ -2142,9 +2231,9 @@ footer{padding:76px 0 48px;font-size:13.5px}
           {c:"demo-s1",t:1600,cap:1},
           {c:"demo-s1 flash",t:430,cap:1},
           {c:"demo-s2",t:1450,cap:2},
-          {c:"demo-s2 demo-s2b",t:1750,cap:2,stamp:"RECEIVED 09:41"},
-          {c:"demo-s3",t:2650,cap:3,stamp:"DISPENSED 10:07",replay:true},
-          {c:"demo-s4",t:2400,cap:3,stamp:"OUT FOR DELIVERY"}
+          {c:"demo-s2 demo-s2b",t:1750,cap:2,stamp:"Received 9:41"},
+          {c:"demo-s3",t:2650,cap:3,stamp:"Dispensed 10:07",replay:true},
+          {c:"demo-s4",t:2400,cap:3,stamp:"Out for delivery"}
         ], k=0;
     function setStamp(txt){
       if(!stamp2) return;
