@@ -304,14 +304,6 @@ section{padding:88px 0}
 .drop b{font-size:16px}
 .drop p{font-size:13.5px;color:var(--ink-soft);margin-top:5px}
 .drop input{display:none}
-.file-chip{
-  display:none;align-items:center;gap:13px;margin-top:18px;
-  background:var(--gauze);border:1px solid var(--line);border-radius:12px;padding:13px 16px;
-}
-.file-chip.on{display:flex}
-.file-chip img{width:46px;height:46px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
-.file-chip .fn{font-family:var(--font-mono);font-size:12.5px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.file-chip .fx{background:none;border:none;color:var(--recall);font-weight:700;font-size:13px}
 .wiz-foot{display:flex;justify-content:space-between;align-items:center;margin-top:30px;gap:14px}
 .wiz-note{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.06em;color:var(--ink-soft);max-width:40ch}
 .success{text-align:center;padding:14px 0}
@@ -635,7 +627,6 @@ details{border-radius:18px}
 .drop{background:rgba(255,255,255,.38);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:2px dashed rgba(27,60,135,.24);border-radius:20px}
 .drop.dragover{border-color:var(--sun-deep);background:rgba(255,216,70,.3)}
 .drop-ico{background:rgba(255,255,255,.8);box-shadow:0 10px 22px -10px rgba(15,30,69,.3),inset 0 1px 0 #fff}
-.file-chip{background:rgba(255,255,255,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.8)}
 .ref{background:rgba(255,255,255,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1.5px dashed rgba(27,60,135,.3)}
 .verdict.good{background:rgba(255,216,70,.5);border-color:rgba(255,255,255,.8);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .verdict.bad{background:rgba(251,222,222,.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
@@ -1438,7 +1429,7 @@ footer{padding:76px 0 48px;font-size:13.5px}
 /* 1. live backdrop blur was running on ~40 layers over animated content.
       Frosted look kept via opacity; blur kept only on the nav. */
 .wizard,.step-card,.parcel-card,.contact-card,details,.script,.script-foot,.float-tag,.chip,.med,
-.field input,.field select,.loc-tab,.count-chip,.route-result,.drop,.file-chip,.fchip,.ref,
+.field input,.field select,.loc-tab,.count-chip,.route-result,.drop,.fchip,.ref,
 .verdict.good,.verdict.bad,.wiz-warn,.parcel,.ph-card,.pb-body,.sat-l,.sat-r,.mfilter,.med-card,
 .btn-arrow,.scroll-cue,.med-search input,.ticker,.estep,.shot-tips span,.drop-ico{
   backdrop-filter:none !important;-webkit-backdrop-filter:none !important}
@@ -1507,6 +1498,84 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
 .med-card:hover .mc-ico{transform:scale(1.06)}
 .mc-ico{transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
 
+/* ============================================================
+   v26 — phone experience pass
+   Tap targets to 44px, a real mobile menu, upload feedback states
+   ============================================================ */
+.nav-inner{position:relative}
+.nav-toggle{display:none;align-items:center;justify-content:center;
+  width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:12px;
+  background:rgba(255,255,255,.75);color:var(--navy-deep);cursor:pointer;padding:0}
+.nav-toggle svg{width:21px;height:21px;display:block}
+.nav-toggle .ic-x{display:none}
+.nav-open .nav-toggle .ic-x{display:block}
+.nav-open .nav-toggle .ic-bar{display:none}
+
+@media (max-width:980px){
+  .nav-toggle{display:inline-flex}
+  .nav-inner{gap:10px}
+  .nav-links{
+    display:block;position:absolute;left:0;right:0;top:calc(100% + 10px);
+    background:#fff;border:1px solid var(--line);border-radius:18px;padding:8px;
+    box-shadow:0 26px 52px -22px rgba(15,30,69,.5);
+    opacity:0;visibility:hidden;transform:translateY(-8px);
+    transition:opacity .18s ease,transform .18s ease,visibility .18s;z-index:90}
+  .nav-open .nav-links{opacity:1;visibility:visible;transform:none}
+  .nav-links li{list-style:none}
+  .nav-links a{display:flex;align-items:center;min-height:48px;padding:0 15px;
+    border-radius:12px;font-size:15.5px;font-weight:600;color:var(--ink)}
+  .nav-links a:active{background:var(--label)}
+
+  /* comfortable thumbs: 44px minimum on every control */
+  .loc-tab,.count-chip,.mfilter{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+  .nav-cta{min-height:44px;display:inline-flex;align-items:center}
+  .foot-grid li{margin-bottom:2px}
+  .foot-grid a{display:inline-flex;align-items:center;min-height:44px}
+  /* the pharmacy email/phone in the contact card are the fallback route —
+     they must be comfortably tappable, not 14px of text */
+  .mono-line a{display:inline-flex;align-items:center;min-height:44px}
+  .bulk-slider{height:44px;background:transparent}
+  .bulk-slider::-webkit-slider-runnable-track{height:6px;border-radius:999px}
+  .bulk-slider::-moz-range-track{height:6px;border-radius:999px}
+  .bulk-slider::-webkit-slider-thumb{margin-top:-9px}
+  .sig-clear{min-height:38px;padding:8px 15px}
+  .drop-actions .btn{min-height:48px}
+  .wiz-foot .btn{min-height:48px}
+}
+@media (max-width:640px){
+  /* the wizard is the whole point of the page on a phone — give it room */
+  .wiz-body{padding:24px 16px}
+  .drop{padding:26px 16px}
+  .drop-actions{flex-direction:column;width:100%}
+  .drop-actions .btn{width:100%;justify-content:center}
+  .wiz-foot{flex-direction:column-reverse;align-items:stretch;gap:12px}
+  .wiz-foot .btn{width:100%;justify-content:center}
+  .wiz-note{max-width:none;text-align:center}
+  .loc-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .loc-tabs .loc-tab:first-child{grid-column:1 / -1}
+  .count-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .count-chip{padding:10px 6px;font-size:11.5px}
+}
+
+/* The sticky "Upload your script" bar is a shortcut TO the wizard. Once the
+   wizard is on screen it stops being useful and starts covering the consent
+   checkbox and the Submit button, so retire it while the wizard is in view. */
+.wiz-active .mob-cta{opacity:0;visibility:hidden;transform:translateY(12px);pointer-events:none}
+.mob-cta{transition:opacity .25s ease,transform .25s ease,visibility .25s}
+/* keep panes clear of the fixed header when the wizard scrolls itself into view */
+.wizard,.wiz-pane{scroll-margin-top:88px}
+@media (max-width:640px){
+  /* room for the sticky bar only while it is actually shown */
+  body{padding-bottom:76px}
+  body.wiz-active{padding-bottom:20px}
+}
+
+/* upload feedback states */
+.fchip.is-loading{opacity:.7}
+.fchip.is-loading .fs{color:var(--navy);font-weight:600}
+.file-count.is-over{color:#B31E24;font-weight:600}
+.field input.bad{border-color:#E4A0A4}
+.field input.bad:focus{box-shadow:0 0 0 4px rgba(179,30,36,.14)}
 </style>
 </head>
 <body>
@@ -1527,8 +1596,12 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       </span>
       <span class="brand-name">My Dr's Bag<small>BY DIRECT CHEMIST OUTLET</small></span>
     </a>
+    <button type="button" class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false" aria-controls="navList">
+      <svg class="ic-bar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      <svg class="ic-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
     <nav aria-label="Primary">
-      <ul class="nav-links">
+      <ul class="nav-links" id="navList">
         <li><a href="#how">How it works</a></li>
         <li><a href="#coverage">Coverage</a></li>
         <li><a href="#meds">Medications</a></li>
@@ -2110,6 +2183,30 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
   },{threshold:.12});
   document.querySelectorAll(".rv").forEach(function(el){ io.observe(el); });
 
+  /* ---- hide the sticky upload bar once the wizard is on screen ---- */
+  var wizEl=document.getElementById("wizard");
+  if(wizEl&&"IntersectionObserver" in window){
+    new IntersectionObserver(function(es){
+      es.forEach(function(e){ document.body.classList.toggle("wiz-active", e.isIntersecting); });
+    },{threshold:.08}).observe(wizEl);
+  }
+
+  /* ---- mobile menu ---- */
+  var navToggle=document.getElementById("navToggle");
+  if(navToggle){
+    var closeNav=function(){ document.body.classList.remove("nav-open"); navToggle.setAttribute("aria-expanded","false"); };
+    navToggle.addEventListener("click",function(e){
+      e.stopPropagation();
+      var open=document.body.classList.toggle("nav-open");
+      navToggle.setAttribute("aria-expanded",open?"true":"false");
+    });
+    document.querySelectorAll("#navList a").forEach(function(a){ a.addEventListener("click",closeNav); });
+    document.addEventListener("click",function(e){
+      if(document.body.classList.contains("nav-open") && !e.target.closest(".nav-inner")) closeNav();
+    });
+    document.addEventListener("keydown",function(e){ if(e.key==="Escape") closeNav(); });
+  }
+
   /* ============ WIZARD ============ */
   var wiz=document.getElementById("wizard");
   if(!wiz) return;
@@ -2194,6 +2291,9 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       toStep3=document.getElementById("toStep3"),
       FILES=[], MAXF=4, pending=0,
       fileCount=document.getElementById("fileCount");
+  /* Mail relay accepts 10 MB of attachments in total; stay clear of the edge. */
+  var MAX_TOTAL=9*1024*1024, PER_FILE_TARGET=1.6*1024*1024;
+  function totalBytes(){ var t=0; FILES.forEach(function(f){ if(f.blob) t+=f.blob.size; }); return t; }
 
   function fmtMB(b){ return (b/1048576).toFixed(2)+" MB"; }
 
@@ -2208,11 +2308,18 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
             c=document.createElement("canvas");
         c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
         c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-        c.toBlob(function(b){
-          URL.revokeObjectURL(url);
-          if(b&&b.size<file.size) res({name:file.name.replace(/\.[^.]+$/,"")+".jpg",blob:b,orig:file.size});
-          else res({name:file.name,blob:file,orig:file.size});
-        },"image/jpeg",.82);
+        /* Step the quality down only if the photo is still heavy, so a normal
+           script photo keeps full legibility but a 12MP phone shot can't blow
+           the 10 MB cap the mail relay enforces. */
+        var ladder=[.82,.7,.6], li=0;
+        (function attempt(){
+          c.toBlob(function(b){
+            if(b && b.size>PER_FILE_TARGET && li<ladder.length-1){ li++; attempt(); return; }
+            URL.revokeObjectURL(url);
+            if(b&&b.size<file.size) res({name:file.name.replace(/\.[^.]+$/,"")+".jpg",blob:b,orig:file.size});
+            else res({name:file.name,blob:file,orig:file.size});
+          },"image/jpeg",ladder[li]);
+        })();
       };
       img.onerror=function(){ URL.revokeObjectURL(url); res({name:file.name,blob:file,orig:file.size}); };
       img.src=url;
@@ -2222,32 +2329,64 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
   function renderFiles(){
     fileList.innerHTML="";
     FILES.forEach(function(f,idx){
-      var chip=document.createElement("div"); chip.className="fchip";
+      var chip=document.createElement("div"); chip.className="fchip"+(f.loading?" is-loading":"");
       var im=document.createElement("img");
-      if(f.blob.type&&f.blob.type.indexOf("image")===0){ im.src=URL.createObjectURL(f.blob); }
-      else { im.style.display="none"; }
-      var fn=document.createElement("span"); fn.className="fn"; fn.textContent=f.name;
+      if(f.blob&&f.blob.type&&f.blob.type.indexOf("image")===0){
+        /* cache one object URL per entry and release it on removal — renderFiles
+           runs on every change, and minting a new URL each time leaks on phones */
+        if(!f.thumb) f.thumb=URL.createObjectURL(f.blob);
+        im.src=f.thumb;
+      } else { im.style.display="none"; }
+      var fn=document.createElement("span"); fn.className="fn";
+      fn.textContent=(idx+1)+". "+f.name;
       var fs=document.createElement("span"); fs.className="fs";
-      fs.textContent=fmtMB(f.blob.size)+(f.orig>f.blob.size*1.15?" · compressed":"");
-      var bx=document.createElement("button"); bx.type="button"; bx.textContent="✕"; bx.setAttribute("aria-label","Remove "+f.name);
-      bx.addEventListener("click",function(){ FILES.splice(idx,1); renderFiles(); });
+      fs.textContent=f.loading?"Optimising…":fmtMB(f.blob.size)+(f.orig>f.blob.size*1.15?" · compressed":"");
+      var bx=document.createElement("button"); bx.type="button"; bx.textContent="\u2715"; bx.setAttribute("aria-label","Remove "+f.name);
+      bx.addEventListener("click",function(){
+        var i=FILES.indexOf(f); if(i<0) return;
+        if(f.thumb) URL.revokeObjectURL(f.thumb);
+        if(f.loading) f.cancelled=true;
+        FILES.splice(i,1); renderFiles();
+      });
       chip.appendChild(im); chip.appendChild(fn); chip.appendChild(fs); chip.appendChild(bx);
       fileList.appendChild(chip);
     });
-    toStep3.disabled=FILES.length===0;
-    if(pending>0) fileCount.textContent="Optimising photo…";
-    else if(FILES.length) fileCount.textContent=FILES.length+" of "+MAXF+" attached"+(FILES.length<MAXF?" · add another if the script runs over a page":"");
+    /* never let anyone leave this step mid-compression: the photo would not be
+       in FILES yet and would silently never reach the pharmacy */
+    toStep3.disabled = pending>0 || FILES.length===0 || totalBytes()>MAX_TOTAL;
+    var over=totalBytes()>MAX_TOTAL;
+    if(pending>0) fileCount.textContent="Optimising "+pending+" photo"+(pending>1?"s":"")+"… hang on";
+    else if(over) fileCount.textContent="These add up to "+fmtMB(totalBytes())+" — too big to email. Remove one and try again.";
+    else if(FILES.length) fileCount.textContent=FILES.length+" of "+MAXF+" attached · "+fmtMB(totalBytes())+(FILES.length<MAXF?" · add another if the script runs over a page":"");
     else fileCount.textContent="";
+    fileCount.classList.toggle("is-over",over);
   }
 
   function addFiles(list){
+    /* Reserve each entry's slot BEFORE compressing. Compression finishes out of
+       order, so pushing on completion shuffled the pages of a multi-page script;
+       the pharmacy then had to work out which photo was page 1. */
     var room=MAXF-FILES.length;
+    if(room<=0){ fileCount.textContent="That's the "+MAXF+"-photo limit — remove one to add another."; return; }
     [].slice.call(list,0,room).forEach(function(file){
-      pending++; renderFiles();
-      compressImage(file).then(function(f){ pending--; FILES.push(f); renderFiles(); });
+      var entry={name:file.name,blob:null,orig:file.size,loading:true,thumb:null,cancelled:false};
+      FILES.push(entry); pending++; renderFiles();
+      compressImage(file).then(function(f){
+        pending--;
+        if(entry.cancelled) return;
+        entry.name=f.name; entry.blob=f.blob; entry.orig=f.orig; entry.loading=false;
+        renderFiles();
+      })["catch"](function(){
+        pending--;
+        var i=FILES.indexOf(entry); if(i>-1) FILES.splice(i,1);
+        renderFiles();
+      });
     });
   }
-  function resetFiles(){ FILES=[]; fileInput.value=""; renderFiles(); }
+  function resetFiles(){
+    FILES.forEach(function(f){ if(f.thumb) URL.revokeObjectURL(f.thumb); });
+    FILES=[]; pending=0; fileInput.value=""; renderFiles();
+  }
 
   fileInput.addEventListener("change",function(){ addFiles(fileInput.files); fileInput.value=""; });
   drop.addEventListener("click",function(e){ if(e.target.closest("button")) return; fileInput.click(); });
@@ -2291,7 +2430,16 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
   ["pointerup","pointercancel","pointerleave"].forEach(function(ev){ sig.addEventListener(ev,function(){ drawing=false; }); });
   document.getElementById("sigClear").addEventListener("click",clearSig);
   consentBox.addEventListener("change",checkC);
-  function checkC(){ submitWiz.disabled=!(cName.value.trim().length>1 && cEmail.value.trim().length>4 && signed && consentBox.checked); }
+  function validContact(v){
+    v=(v||"").trim();
+    if(v.indexOf("@")>-1) return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+    return v.replace(/[^0-9]/g,"").length>=8;   /* AU mobile / landline */
+  }
+  function checkC(){
+    var okContact=validContact(cEmail.value);
+    cEmail.classList.toggle("bad", cEmail.value.trim().length>3 && !okContact);
+    submitWiz.disabled=!(cName.value.trim().length>1 && okContact && signed && consentBox.checked);
+  }
   cName.addEventListener("input",checkC);
   cEmail.addEventListener("input",checkC);
 
@@ -2305,6 +2453,23 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
         err=document.getElementById("sendErr"),
         sel=document.querySelector(".count-chip.sel");
     err.classList.remove("on");
+    /* Belt and braces: never post a partial set. renderFiles already blocks
+       Continue while compressing, but the user may have got here first. */
+    if(pending>0){
+      err.classList.add("on");
+      err.innerHTML="<b>Still preparing your photos.</b> Give it a second and tap Submit again.";
+      return;
+    }
+    if(!FILES.length){
+      err.classList.add("on");
+      err.innerHTML="<b>No script photo attached.</b> Go back a step and add the photo.";
+      return;
+    }
+    if(totalBytes()>MAX_TOTAL){
+      err.classList.add("on");
+      err.innerHTML="<b>Those photos add up to "+fmtMB(totalBytes())+".</b> That is too large to email — go back and remove one.";
+      return;
+    }
     submitWiz.disabled=true; submitWiz.textContent="Sending…";
 
     var fd=new FormData();
@@ -2323,21 +2488,41 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
     fd.append("Photos attached", String(FILES.length));
 
     fd.append("Authority to order","Confirmed and signed by "+cName.value.trim()+" for "+clinicName.value.trim()+" on "+d.toLocaleString("en-AU"));
+    /* One upload attempt over XHR (not fetch) so the phone can show real
+       progress — a 4 MB send on mobile data is otherwise a dead button. */
+    var attempts=0;
     var doSend=function(){
-    fetch("https://formsubmit.co/ajax/"+to,{method:"POST",body:fd,headers:{Accept:"application/json"}})
-      .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
-      .then(function(){
+      attempts++;
+      var xhr=new XMLHttpRequest();
+      xhr.open("POST","https://formsubmit.co/ajax/"+to,true);
+      xhr.setRequestHeader("Accept","application/json");
+      xhr.timeout=120000;
+      xhr.upload.onprogress=function(e){
+        if(!e.lengthComputable) return;
+        var pc=Math.round(e.loaded/e.total*100);
+        submitWiz.textContent = pc<100 ? "Sending… "+pc+"%" : "Almost there…";
+      };
+      var fail=function(reason){
+        if(attempts<2){ submitWiz.textContent="Retrying…"; setTimeout(doSend,1200); return; }
+        submitWiz.disabled=false; submitWiz.textContent="Submit script";
+        err.classList.add("on");
+        err.innerHTML='<b>We couldn&#39;t send that just now.</b> Your connection may have dropped mid-upload. '+
+          'Tap <b>Submit script</b> to try again — or email the photo straight to '+
+          '<a href="mailto:'+to+'?subject=Dr%27s%20Bag%20script%20'+ref+'" style="color:inherit"><b>'+to+'</b></a> '+
+          'quoting reference '+ref+'.';
+      };
+      xhr.onload=function(){
+        if(xhr.status<200||xhr.status>=300){ fail("http"); return; }
         document.getElementById("refCode").textContent=ref;
         document.getElementById("successPharm").textContent=PHARM[key].label;
         document.getElementById("successEmail").textContent=to;
         document.getElementById("tNow").textContent=d.toLocaleDateString("en-AU",{weekday:"short",day:"numeric",month:"short"});
+        submitWiz.disabled=false; submitWiz.textContent="Submit script";
         show(4);
-      })
-      .catch(function(){
-        err.classList.add("on");
-        err.innerHTML='<b>Couldn&#39;t send from here.</b> Email the script directly to <a href="mailto:'+to+'?subject=Dr%27s%20Bag%20script%20'+ref+'" style="color:inherit">'+to+'</a> — or try again with the page open in your browser (chat previews block outbound email).';
-      })
-      .finally(function(){ submitWiz.disabled=false; submitWiz.textContent="Submit script"; });
+      };
+      xhr.onerror=function(){ fail("net"); };
+      xhr.ontimeout=function(){ fail("timeout"); };
+      xhr.send(fd);
     };
     sig.toBlob(function(b){ if(b) fd.append("signature", b, "signature-"+ref+".png"); doSend(); },"image/png");
   });
