@@ -1570,6 +1570,43 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
   body.wiz-active{padding-bottom:20px}
 }
 
+/* receipt + fallback on the success step */
+.receipt{max-width:520px;margin:26px auto 0;text-align:left;border:1px solid var(--line);
+  border-radius:16px;background:rgba(255,255,255,.72);padding:16px 18px}
+.receipt{scroll-margin-top:88px}
+.receipt-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.receipt-head b{font-size:14.5px}
+.rc-print{font-family:var(--font-body);font-size:12.5px;font-weight:600;padding:9px 14px;
+  min-height:40px;border-radius:999px;border:1px solid var(--line);background:#fff;
+  color:var(--navy);cursor:pointer}
+.rc-print:hover{border-color:var(--navy)}
+.receipt-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px 18px;margin:0}
+.receipt-grid>div{min-width:0}
+.receipt-grid dt{font-family:var(--font-mono);font-size:10px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-soft);margin-bottom:3px}
+.receipt-grid dd{font-size:13.5px;font-weight:500;margin:0;overflow-wrap:anywhere}
+.fallback{max-width:520px;margin:26px auto 0;text-align:left;border:1px solid #E5D6A8;
+  border-radius:16px;background:#FFFBEF;padding:16px 18px}
+.fallback b{display:block;font-size:14.5px;margin-bottom:6px}
+.fallback p{font-size:13.5px;color:#5A5233;line-height:1.6}
+.fb-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.fb-actions .btn{font-size:13.5px;padding:11px 18px;min-height:44px}
+@media (max-width:640px){
+  .receipt-grid{grid-template-columns:1fr}
+  .fb-actions{flex-direction:column}
+  .fb-actions .btn{width:100%;justify-content:center}
+}
+/* printed/saved receipt: just the receipt, nothing else */
+@media print{
+  .nav,.ticker,.mob-cta,footer,.wiz-rail,.wiz-head,.wiz-plain,.print-hide,.timeline,
+  section:not(#upload),.sec-head{display:none !important}
+  body{background:#fff;padding:0}
+  .wizard,.wiz-body{box-shadow:none;border:none;background:#fff;padding:0}
+  .receipt{border-color:#999;background:#fff;max-width:none}
+  .success{padding:0}
+  a[href]::after{content:""}
+}
+
 /* upload feedback states */
 .fchip.is-loading{opacity:.7}
 .fchip.is-loading .fs{color:var(--navy);font-weight:600}
@@ -1918,14 +1955,44 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
           <div class="success">
             <span class="stamp">SCRIPT RECEIVED</span>
             <h3 class="display">We've got it from here.</h3>
-            <p class="hint" style="margin:10px auto 0;max-width:46ch">Your script has been emailed to <b id="successPharm">the pharmacy</b> — <span class="mono" id="successEmail" style="font-size:13px"></span>. We'll be in touch if anything on it needs a check.</p>
+            <p class="hint" style="margin:10px auto 0;max-width:46ch">Sent to <b id="successPharm">the pharmacy</b> — <span class="mono" id="successEmail" style="font-size:13px"></span>. We'll be in touch if anything on it needs a check.</p>
             <div class="ref" id="refCode">MDB-000000-0000</div>
+
+            <!-- receipt: the clinic's own record of what was sent -->
+            <div class="receipt" id="receipt">
+              <div class="receipt-head">
+                <b>Your receipt</b>
+                <button type="button" class="rc-print print-hide" id="printReceipt">Save or print</button>
+              </div>
+              <dl class="receipt-grid">
+                <div><dt>Reference</dt><dd class="mono" id="rcRef">—</dd></div>
+                <div><dt>Sent</dt><dd id="rcWhen">—</dd></div>
+                <div><dt>Clinic</dt><dd id="rcClinic">—</dd></div>
+                <div><dt>Postcode</dt><dd id="rcPost">—</dd></div>
+                <div><dt>Pharmacy</dt><dd id="rcPharm">—</dd></div>
+                <div><dt>Photos attached</dt><dd id="rcPhotos">—</dd></div>
+                <div><dt>Signed by</dt><dd id="rcSigner">—</dd></div>
+                <div><dt>Copy emailed to</dt><dd id="rcCopy">—</dd></div>
+              </dl>
+            </div>
+
             <div class="timeline">
               <div class="tl-step hit"><b>Received</b><span id="tNow">Today</span></div>
               <div class="tl-step"><b>Dispensed</b><span>Today</span></div>
               <div class="tl-step"><b>Out for delivery</b><span id="tEta">Next business day</span></div>
             </div>
-            <div style="margin-top:34px"><button class="btn btn-ghost" id="restartWiz">Submit another script</button></div>
+
+            <!-- fallback: what to do if the pharmacy never comes back -->
+            <div class="fallback print-hide" id="fallback">
+              <b>Haven't heard back?</b>
+              <p>Scripts are normally confirmed the same business day. If nothing has come through by <span id="fbBy">the next business day</span>, chase it directly and quote your reference — don't re-submit, or the script may be dispensed twice.</p>
+              <div class="fb-actions">
+                <a class="btn btn-primary" id="fbEmail" href="#">Email the pharmacy</a>
+                <a class="btn btn-ghost" id="fbCall" href="tel:+61353358388">Call (03) 5335 8388</a>
+              </div>
+            </div>
+
+            <div style="margin-top:30px" class="print-hide"><button class="btn btn-ghost" id="restartWiz">Submit another script</button></div>
           </div>
         </div>
 
@@ -2220,7 +2287,9 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       r.classList.toggle("active", rn===cur);
       r.classList.toggle("done", rn<cur || n===4);
     });
-    if(n!==4) wiz.scrollIntoView({behavior:"smooth",block:"nearest"});
+    /* step 4 is the receipt — put its top under the header rather than
+       leaving the clinic looking at the middle of their own confirmation */
+    wiz.scrollIntoView({behavior:"smooth",block:n===4?"start":"nearest"});
   }
 
   /* ---- step 1: pharmacy tabs + postcode routing ---- */
@@ -2240,6 +2309,10 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       email:"delacombe@directchemistoutlet.com.au"}
   };
   var FALLBACK_EMAIL=PHARM.delacombe.email;
+  /* Optional second inbox that receives a copy of EVERY script — set this to a
+     monitored address (e.g. a manager or a shared mailbox) so a script is never
+     sitting in only one place. Leave "" to send to the pharmacy alone. */
+  var BACKUP_INBOX="";
   function emailFor(k){ return (PHARM[k]&&PHARM[k].email)||FALLBACK_EMAIL; }
 
   var pcode=document.getElementById("pcode"),
@@ -2484,6 +2557,16 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
     fd.append("Contact name",cName.value.trim());
     fd.append("Contact email or mobile",cEmail.value.trim());
     fd.append("_honey","");
+    /* Give the clinic its own copy. FormSubmit's autoresponder does not run on
+       AJAX submissions, so a cc is the only way they end up holding evidence of
+       what they sent. Only valid addresses go in — the contact field also
+       accepts a mobile number. */
+    var ccList=[];
+    var contactVal=cEmail.value.trim();
+    var contactIsEmail=contactVal.indexOf("@")>-1 && validContact(contactVal);
+    if(contactIsEmail) ccList.push(contactVal);
+    if(BACKUP_INBOX) ccList.push(BACKUP_INBOX);
+    if(ccList.length) fd.append("_cc",ccList.join(","));
     FILES.forEach(function(f,fi){ fd.append("script_photo_"+(fi+1), f.blob, f.name); });
     fd.append("Photos attached", String(FILES.length));
 
@@ -2513,10 +2596,39 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       };
       xhr.onload=function(){
         if(xhr.status<200||xhr.status>=300){ fail("http"); return; }
-        document.getElementById("refCode").textContent=ref;
-        document.getElementById("successPharm").textContent=PHARM[key].label;
-        document.getElementById("successEmail").textContent=to;
-        document.getElementById("tNow").textContent=d.toLocaleDateString("en-AU",{weekday:"short",day:"numeric",month:"short"});
+        var setTxt=function(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; };
+        setTxt("refCode",ref);
+        setTxt("successPharm",PHARM[key].label);
+        setTxt("successEmail",to);
+        setTxt("tNow",d.toLocaleDateString("en-AU",{weekday:"short",day:"numeric",month:"short"}));
+
+        /* the clinic's own record — the one artefact that exists no matter what
+           the mail relay does with the message */
+        var whenTxt=d.toLocaleString("en-AU",{weekday:"short",day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit"});
+        setTxt("rcRef",ref);
+        setTxt("rcWhen",whenTxt);
+        setTxt("rcClinic",clinicName.value.trim()||"—");
+        setTxt("rcPost",pcode.value||"—");
+        setTxt("rcPharm",PHARM[key].label);
+        setTxt("rcPhotos",FILES.length+(FILES.length===1?" photo":" photos")+" + signature");
+        setTxt("rcSigner",cName.value.trim()||"—");
+        setTxt("rcCopy",contactIsEmail?contactVal:"Not emailed — you gave a phone number");
+
+        setTxt("fbBy",nextBusinessDay(d));
+        var fbe=document.getElementById("fbEmail");
+        if(fbe){
+          var body="Following up on a Dr's Bag script submitted through mydrsbag.com.au.\n\n"+
+                   "Reference: "+ref+"\n"+
+                   "Clinic: "+(clinicName.value.trim()||"—")+"\n"+
+                   "Postcode: "+(pcode.value||"—")+"\n"+
+                   "Submitted: "+whenTxt+"\n"+
+                   "Contact: "+(cName.value.trim()||"—")+" ("+(contactVal||"—")+")\n"+
+                   "Photos sent: "+FILES.length+"\n\n"+
+                   "Could you confirm this has been received? Thanks.";
+          fbe.href="mailto:"+to+"?subject="+encodeURIComponent("Following up — Dr's Bag script "+ref)+
+                   "&body="+encodeURIComponent(body);
+        }
+
         submitWiz.disabled=false; submitWiz.textContent="Submit script";
         show(4);
       };
@@ -2526,6 +2638,15 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
     };
     sig.toBlob(function(b){ if(b) fd.append("signature", b, "signature-"+ref+".png"); doSend(); },"image/png");
   });
+
+  /* ---- receipt helpers ---- */
+  function nextBusinessDay(from){
+    var n=new Date(from.getTime());
+    do { n.setDate(n.getDate()+1); } while(n.getDay()===0||n.getDay()===6);
+    return n.toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long"});
+  }
+  var printBtn=document.getElementById("printReceipt");
+  if(printBtn) printBtn.addEventListener("click",function(){ window.print(); });
 
   /* ---- back / restart ---- */
   wiz.querySelectorAll("[data-back]").forEach(function(b){
