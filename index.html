@@ -1607,7 +1607,23 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
   a[href]::after{content:""}
 }
 
+/* rescue panel — shown only when the relay refuses or the network dies */
+.rescue{display:none;margin-top:14px;border:1.5px solid #C9D5EA;background:#F7FAFF;
+  border-radius:14px;padding:16px 18px}
+.rescue.on{display:block}
+.rescue b{display:block;font-size:14.5px;margin-bottom:6px}
+.rescue p{font-size:13.5px;color:#3C465C;line-height:1.6}
+.rescue-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.rescue-actions .btn{font-size:13.5px;padding:12px 18px;min-height:46px}
+@media (max-width:640px){
+  .rescue-actions{flex-direction:column}
+  .rescue-actions .btn{width:100%;justify-content:center}
+}
+
 /* upload feedback states */
+.fchip.is-warn{border-color:#E5C98A;background:#FFFBEF}
+.fchip.is-warn .fs{color:#8A6D1F;font-weight:600}
+.wiz-pane:focus{outline:none}
 .fchip.is-loading{opacity:.7}
 .fchip.is-loading .fs{color:var(--navy);font-weight:600}
 .file-count.is-over{color:#B31E24;font-weight:600}
@@ -1944,6 +1960,15 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
             <label class="consent-check"><input type="checkbox" id="consentBox"> I have read and agree to the statement above</label>
           </div>
           <div class="wiz-warn" id="sendErr" role="alert"></div>
+          <div class="rescue" id="rescue">
+            <b>Send it yourself — your photos are still here</b>
+            <p>Your script and signature are ready to go. Pick whichever suits you; quote reference <span class="mono" id="rescueRef"></span>.</p>
+            <div class="rescue-actions">
+              <button type="button" class="btn btn-primary" id="rescueShare">Share script to email</button>
+              <button type="button" class="btn btn-ghost" id="rescueDownload">Save photos to this device</button>
+              <a class="btn btn-ghost" id="rescueMail" href="#">Open email to the pharmacy</a>
+            </div>
+          </div>
           <div class="wiz-foot">
             <button class="btn btn-ghost" data-back="2">Back</button>
             <button class="btn btn-primary" id="submitWiz" disabled>Submit script</button>
@@ -2290,6 +2315,13 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
     /* step 4 is the receipt — put its top under the header rather than
        leaving the clinic looking at the middle of their own confirmation */
     wiz.scrollIntoView({behavior:"smooth",block:n===4?"start":"nearest"});
+    /* announce the step change to assistive tech, which otherwise gets no
+       signal that the panel behind the button has been swapped out */
+    var pane=wiz.querySelector('.wiz-pane[data-pane="'+n+'"]');
+    if(pane){
+      pane.setAttribute("tabindex","-1");
+      try { pane.focus({preventScroll:true}); } catch(e){ pane.focus(); }
+    }
   }
 
   /* ---- step 1: pharmacy tabs + postcode routing ---- */
@@ -2309,6 +2341,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       email:"delacombe@directchemistoutlet.com.au"}
   };
   var FALLBACK_EMAIL=PHARM.delacombe.email;
+  var SIG_BLOB=null;   /* last rendered signature, reused by the rescue panel */
   /* Optional second inbox that receives a copy of EVERY script — set this to a
      monitored address (e.g. a manager or a shared mailbox) so a script is never
      sitting in only one place. Leave "" to send to the pharmacy alone. */
@@ -2394,7 +2427,13 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
           },"image/jpeg",ladder[li]);
         })();
       };
-      img.onerror=function(){ URL.revokeObjectURL(url); res({name:file.name,blob:file,orig:file.size}); };
+      img.onerror=function(){
+        /* Usually an iPhone HEIC on a browser that cannot decode it. We still
+           send the original, but the clinic is told, because the pharmacy may
+           not be able to open it either. */
+        URL.revokeObjectURL(url);
+        res({name:file.name,blob:file,orig:file.size,undecodable:true});
+      };
       img.src=url;
     });
   }
@@ -2413,7 +2452,10 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       var fn=document.createElement("span"); fn.className="fn";
       fn.textContent=(idx+1)+". "+f.name;
       var fs=document.createElement("span"); fs.className="fs";
-      fs.textContent=f.loading?"Optimising…":fmtMB(f.blob.size)+(f.orig>f.blob.size*1.15?" · compressed":"");
+      fs.textContent=f.loading?"Optimising…":
+        (f.undecodable?"⚠ may not open — retake with “Take a photo”":
+          fmtMB(f.blob.size)+(f.orig>f.blob.size*1.15?" · compressed":""));
+      if(f.undecodable) chip.classList.add("is-warn");
       var bx=document.createElement("button"); bx.type="button"; bx.textContent="\u2715"; bx.setAttribute("aria-label","Remove "+f.name);
       bx.addEventListener("click",function(){
         var i=FILES.indexOf(f); if(i<0) return;
@@ -2448,6 +2490,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
         pending--;
         if(entry.cancelled) return;
         entry.name=f.name; entry.blob=f.blob; entry.orig=f.orig; entry.loading=false;
+        entry.undecodable=!!f.undecodable;
         renderFiles();
       })["catch"](function(){
         pending--;
@@ -2526,6 +2569,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
         err=document.getElementById("sendErr"),
         sel=document.querySelector(".count-chip.sel");
     err.classList.remove("on");
+    var rescueBox=document.getElementById("rescue"); if(rescueBox) rescueBox.classList.remove("on");
     /* Belt and braces: never post a partial set. renderFiles already blocks
        Continue while compressing, but the user may have got here first. */
     if(pending>0){
@@ -2587,6 +2631,65 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       };
       var mailtoFallback='<a href="mailto:'+to+'?subject=Dr%27s%20Bag%20script%20'+ref+
           '" style="color:inherit"><b>'+to+'</b></a>';
+      /* The relay is one service and it can refuse (or vanish) at any time. When
+         it does, the clinic must still be able to get the script to the pharmacy,
+         so hand the actual photos back to them: Web Share puts them straight into
+         the phone's mail app, download saves them on a desktop. Nothing is lost. */
+      var buildFiles=function(){
+        var out=[];
+        FILES.forEach(function(f,i){
+          if(!f.blob) return;
+          var nm=ref+"-"+(i+1)+"-"+f.name;
+          try { out.push(new File([f.blob],nm,{type:f.blob.type||"image/jpeg"})); }
+          catch(e){ /* older browsers: File constructor unavailable */ }
+        });
+        if(SIG_BLOB){ try{ out.push(new File([SIG_BLOB],ref+"-signature.png",{type:"image/png"})); }catch(e){} }
+        return out;
+      };
+      var summaryText=function(){
+        return "Dr's Bag script "+ref+"\n"+
+               "Clinic: "+(clinicName.value.trim()||"—")+"\n"+
+               "Postcode: "+(pcode.value||"—")+"\n"+
+               "Pharmacy: "+PHARM[key].label+"\n"+
+               "Contact: "+(cName.value.trim()||"—")+" ("+(cEmail.value.trim()||"—")+")\n"+
+               "Items: "+(sel?sel.textContent.trim():"Not stated")+"\n"+
+               "Authorised and signed by "+(cName.value.trim()||"—")+" on "+d.toLocaleString("en-AU");
+      };
+      var wireRescue=function(){
+        var rr=document.getElementById("rescueRef"); if(rr) rr.textContent=ref;
+        var sh=document.getElementById("rescueShare"),
+            dl=document.getElementById("rescueDownload"),
+            ml=document.getElementById("rescueMail"),
+            box=document.getElementById("rescue");
+        if(!box) return;
+        box.classList.add("on");
+        if(ml) ml.href="mailto:"+to+"?subject="+encodeURIComponent("Dr's Bag script "+ref+" — "+(clinicName.value.trim()||""))+
+                       "&body="+encodeURIComponent(summaryText()+"\n\n(Please find the script photo attached.)");
+        var files=buildFiles();
+        var canShare=!!(navigator.share&&navigator.canShare&&files.length&&navigator.canShare({files:files}));
+        if(sh){
+          sh.style.display=canShare?"":"none";
+          sh.onclick=function(){
+            navigator.share({files:buildFiles(),title:"Dr's Bag script "+ref,text:summaryText()})
+              ["catch"](function(){});
+          };
+        }
+        if(dl) dl.onclick=function(){
+          buildFiles().forEach(function(f,i){
+            setTimeout(function(){
+              var u=URL.createObjectURL(f), a=document.createElement("a");
+              a.href=u; a.download=f.name; document.body.appendChild(a); a.click(); a.remove();
+              setTimeout(function(){ URL.revokeObjectURL(u); },8000);
+            }, i*350);
+          });
+          var blob=new Blob([summaryText()],{type:"text/plain"});
+          setTimeout(function(){
+            var u=URL.createObjectURL(blob), a=document.createElement("a");
+            a.href=u; a.download=ref+"-details.txt"; document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(function(){ URL.revokeObjectURL(u); },8000);
+          }, buildFiles().length*350+200);
+        };
+      };
       var fail=function(reason,detail){
         /* "notdelivered" means the relay answered but told us it will NOT send
            the mail — retrying cannot fix that, so go straight to the message. */
@@ -2594,15 +2697,14 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
         submitWiz.disabled=false; submitWiz.textContent="Submit script";
         err.classList.add("on");
         if(reason==="notdelivered"){
-          err.innerHTML='<b>This script was NOT sent.</b> The mail service accepted the '+
-            'upload but refused to deliver it'+(detail?' — <i>'+detail+'</i>':'')+'. '+
-            'Please email the script straight to '+mailtoFallback+' quoting reference '+ref+', '+
-            'and let the pharmacy know the website form needs attention.';
-          return;
+          err.innerHTML='<b>This script was NOT sent.</b> The mail service refused to deliver it'+
+            (detail?' — <i>'+detail+'</i>':'')+'. Nothing you did is wrong, and nothing is lost — '+
+            'send it across yourself below, then let the pharmacy know the website form needs attention.';
+        } else {
+          err.innerHTML='<b>We couldn&#39;t send that just now.</b> Your connection may have dropped '+
+            'mid-upload. Tap <b>Submit script</b> to try again, or send it yourself below.';
         }
-        err.innerHTML='<b>We couldn&#39;t send that just now.</b> Your connection may have dropped mid-upload. '+
-          'Tap <b>Submit script</b> to try again — or email the photo straight to '+
-          mailtoFallback+' quoting reference '+ref+'.';
+        wireRescue();
       };
       xhr.onload=function(){
         if(xhr.status<200||xhr.status>=300){ fail("http"); return; }
@@ -2661,7 +2763,10 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       xhr.ontimeout=function(){ fail("timeout"); };
       xhr.send(fd);
     };
-    sig.toBlob(function(b){ if(b) fd.append("signature", b, "signature-"+ref+".png"); doSend(); },"image/png");
+    sig.toBlob(function(b){
+      if(b){ fd.append("signature", b, "signature-"+ref+".png"); SIG_BLOB=b; }
+      doSend();
+    },"image/png");
   });
 
   /* ---- receipt helpers ---- */
@@ -2679,6 +2784,8 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
   });
   document.getElementById("restartWiz").addEventListener("click",function(){
     document.getElementById("sendErr").classList.remove("on");
+    var rb=document.getElementById("rescue"); if(rb) rb.classList.remove("on");
+    SIG_BLOB=null;
     resetFiles(); clearSig(); consentBox.checked=false;
     cName.value=""; cEmail.value=""; submitWiz.disabled=true;
     show(1);
