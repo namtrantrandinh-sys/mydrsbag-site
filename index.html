@@ -2585,17 +2585,42 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
         var pc=Math.round(e.loaded/e.total*100);
         submitWiz.textContent = pc<100 ? "Sending… "+pc+"%" : "Almost there…";
       };
-      var fail=function(reason){
-        if(attempts<2){ submitWiz.textContent="Retrying…"; setTimeout(doSend,1200); return; }
+      var mailtoFallback='<a href="mailto:'+to+'?subject=Dr%27s%20Bag%20script%20'+ref+
+          '" style="color:inherit"><b>'+to+'</b></a>';
+      var fail=function(reason,detail){
+        /* "notdelivered" means the relay answered but told us it will NOT send
+           the mail — retrying cannot fix that, so go straight to the message. */
+        if(reason!=="notdelivered" && attempts<2){ submitWiz.textContent="Retrying…"; setTimeout(doSend,1200); return; }
         submitWiz.disabled=false; submitWiz.textContent="Submit script";
         err.classList.add("on");
+        if(reason==="notdelivered"){
+          err.innerHTML='<b>This script was NOT sent.</b> The mail service accepted the '+
+            'upload but refused to deliver it'+(detail?' — <i>'+detail+'</i>':'')+'. '+
+            'Please email the script straight to '+mailtoFallback+' quoting reference '+ref+', '+
+            'and let the pharmacy know the website form needs attention.';
+          return;
+        }
         err.innerHTML='<b>We couldn&#39;t send that just now.</b> Your connection may have dropped mid-upload. '+
           'Tap <b>Submit script</b> to try again — or email the photo straight to '+
-          '<a href="mailto:'+to+'?subject=Dr%27s%20Bag%20script%20'+ref+'" style="color:inherit"><b>'+to+'</b></a> '+
-          'quoting reference '+ref+'.';
+          mailtoFallback+' quoting reference '+ref+'.';
       };
       xhr.onload=function(){
         if(xhr.status<200||xhr.status>=300){ fail("http"); return; }
+        /* A 200 is not delivery. FormSubmit answers 200 while refusing to send —
+           most often because the recipient address has never been activated, in
+           which case it replies asking for the confirmation link to be clicked.
+           Showing "SCRIPT RECEIVED" on those responses loses the script silently. */
+        var body=null;
+        try { body=JSON.parse(xhr.responseText||"{}"); } catch(e){ body=null; }
+        if(body){
+          var okFlag=body.success;
+          var msg=String(body.message||body.error||"");
+          /* Only an unambiguous "no" stops us. An unrecognised shape is treated
+             as sent — a false alarm here means the clinic emails a duplicate. */
+          var explicitNo=(okFlag===false||okFlag==="false"||okFlag===0||okFlag==="0");
+          var needsActivation=/activat|confirm(ing)? your email|verify your email|not (yet )?confirmed/i.test(msg);
+          if(explicitNo||needsActivation){ fail("notdelivered",msg.slice(0,180)); return; }
+        }
         var setTxt=function(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; };
         setTxt("refCode",ref);
         setTxt("successPharm",PHARM[key].label);
