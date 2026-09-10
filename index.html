@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+(function(){
+  if(location.protocol==="http:" && /^(mydrsbag\.com\.au|www\.mydrsbag\.com\.au|namtrantrandinh-sys\.github\.io)$/.test(location.hostname)){
+    location.replace(location.href.replace(/^http:/,"https:"));
+  }
+})();
+</script>
 <title>My Dr's Bag — PBS Doctor's Bag dispensed &amp; delivered free to your clinic</title>
 <meta name="description" content="Photograph your PBS prescriber bag script, upload it, and a Direct Chemist Outlet pharmacy dispenses and delivers it free to your clinic — anywhere in Australia.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CjxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgcng9IjE1IiBmaWxsPSIjMUIzQzg3Ii8+CjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0ZGRDg0RCIgc3Ryb2tlLXdpZHRoPSI0LjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CjxwYXRoIGQ9Ik0yMyAyMXYtNGE0IDQgMCAwIDEgNC00aDEwYTQgNCAwIDAgMSA0IDR2NCIvPgo8cmVjdCB4PSIxMiIgeT0iMjEiIHdpZHRoPSI0MCIgaGVpZ2h0PSIyOSIgcng9IjYiLz4KPHBhdGggZD0iTTMyIDI5djEzTTI1LjUgMzUuNWgxMyIvPgo8L2c+PC9zdmc+">
@@ -1978,9 +1985,9 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
         <!-- SUCCESS -->
         <div class="wiz-pane" data-pane="4">
           <div class="success">
-            <span class="stamp">SCRIPT RECEIVED</span>
-            <h3 class="display">We've got it from here.</h3>
-            <p class="hint" style="margin:10px auto 0;max-width:46ch">Sent to <b id="successPharm">the pharmacy</b> — <span class="mono" id="successEmail" style="font-size:13px"></span>. We'll be in touch if anything on it needs a check.</p>
+            <span class="stamp">UPLOAD ACCEPTED</span>
+            <h3 class="display">Your script is on its way.</h3>
+            <p class="hint" style="margin:10px auto 0;max-width:46ch">The secure mail service accepted it for delivery to <b id="successPharm">the pharmacy</b> — <span class="mono" id="successEmail" style="font-size:13px"></span>. We'll be in touch if anything on it needs a check.</p>
             <div class="ref" id="refCode">MDB-000000-0000</div>
 
             <!-- receipt: the clinic's own record of what was sent -->
@@ -1998,6 +2005,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
                 <div><dt>Photos attached</dt><dd id="rcPhotos">—</dd></div>
                 <div><dt>Signed by</dt><dd id="rcSigner">—</dd></div>
                 <div><dt>Copy emailed to</dt><dd id="rcCopy">—</dd></div>
+                <div><dt>Mail tracking ID</dt><dd class="mono" id="rcMail">—</dd></div>
               </dl>
             </div>
 
@@ -2180,7 +2188,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       </details>
       <details>
         <summary>How is our information handled? <span class="plus">＋</span></summary>
-        <p class="faq-a">Uploads run through a secure, end-to-end encrypted submission form integrated with document-signing technology — the same platform trusted by major health organisations. Your data is used to fill the order and never retained.</p>
+        <p class="faq-a">Your upload is encrypted in transit using HTTPS, then processed by our form and email delivery providers and sent to DCO Delacombe. It is used to dispense and follow up your order. The pharmacy and service providers may retain records under their legal, security and operational requirements. Contact DCO Delacombe with privacy questions.</p>
       </details>
     </div>
   </div>
@@ -2303,9 +2311,10 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
   var wiz=document.getElementById("wizard");
   if(!wiz) return;
 
-  var routed=null;
+  var routed=null, submitting=false, lockedControls=[], lastSubmission=null;
 
   function show(n){
+    if(submitting) return;
     wiz.querySelectorAll(".wiz-pane").forEach(function(p){ p.classList.toggle("on", p.dataset.pane==String(n)); });
     wiz.querySelectorAll(".rail-step").forEach(function(r){
       var rn=+r.dataset.rail, cur=Math.min(n,3);
@@ -2326,10 +2335,9 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
 
   /* ---- step 1: pharmacy tabs + postcode routing ---- */
   /* ADMIN NOTE (not shown to clinics): every script — local and
-     Australia-wide — emails delacombe@directchemistoutlet.com.au.
-     The very first submission triggers a one-time FormSubmit
-     "confirm" email to that inbox; click it once and all future
-     scripts flow straight through. */
+     Australia-wide — is routed by the server-side relay to the fixed,
+     configured Delacombe inbox. The browser never chooses a recipient or
+     receives an email-provider credential. */
   var PHARM={
     delacombe:{label:"DCO Delacombe (Ballarat)",
       detail:"Delacombe Town Centre, 315 Glenelg Hwy — hand delivery to your clinic.",
@@ -2341,11 +2349,8 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       email:"delacombe@directchemistoutlet.com.au"}
   };
   var FALLBACK_EMAIL=PHARM.delacombe.email;
+  var SUBMIT_ENDPOINT="https://mydrsbag-script-relay.namtrantrandinh.workers.dev/submit";
   var SIG_BLOB=null;   /* last rendered signature, reused by the rescue panel */
-  /* Optional second inbox that receives a copy of EVERY script — set this to a
-     monitored address (e.g. a manager or a shared mailbox) so a script is never
-     sitting in only one place. Leave "" to send to the pharmacy alone. */
-  var BACKUP_INBOX="";
   function emailFor(k){ return (PHARM[k]&&PHARM[k].email)||FALLBACK_EMAIL; }
 
   var pcode=document.getElementById("pcode"),
@@ -2369,9 +2374,10 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       document.getElementById("routeEmail").textContent="Goes to: "+emailFor(routedKey);
       rr.classList.add("on");
     } else { rr.classList.remove("on"); }
-    toStep2.disabled=!(routedKey && clinicName.value.trim().length>1);
+    toStep2.disabled=submitting || !(routedKey && clinicName.value.trim().length>1);
   }
   function route(){
+    if(submitting) return;
     var v=pcode.value.replace(/\D/g,"").slice(0,4);
     pcode.value=v;
     routedKey=(mode==="auto") ? (v.length===4 ? pcToKey(+v) : null) : mode;
@@ -2379,6 +2385,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
   }
   tabs.forEach(function(t){
     t.addEventListener("click",function(){
+      if(submitting) return;
       tabs.forEach(function(o){ o.classList.remove("sel"); });
       t.classList.add("sel");
       mode=t.dataset.loc;
@@ -2397,11 +2404,17 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       toStep3=document.getElementById("toStep3"),
       FILES=[], MAXF=4, pending=0,
       fileCount=document.getElementById("fileCount");
-  /* Mail relay accepts 10 MB of attachments in total; stay clear of the edge. */
-  var MAX_TOTAL=9*1024*1024, PER_FILE_TARGET=1.6*1024*1024;
+  /* Keep the complete raw attachment set below 5 MiB so base64 expansion and
+     message text remain comfortably inside the provider's 10 MiB limit. */
+  var MAX_TOTAL=4.75*1024*1024, PER_FILE_TARGET=1*1024*1024;
   function totalBytes(){ var t=0; FILES.forEach(function(f){ if(f.blob) t+=f.blob.size; }); return t; }
 
   function fmtMB(b){ return (b/1048576).toFixed(2)+" MB"; }
+  function escHtml(v){
+    return String(v==null?"":v).replace(/[&<>"']/g,function(ch){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch];
+    });
+  }
 
   function compressImage(file){
     return new Promise(function(res){
@@ -2422,7 +2435,8 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
           c.toBlob(function(b){
             if(b && b.size>PER_FILE_TARGET && li<ladder.length-1){ li++; attempt(); return; }
             URL.revokeObjectURL(url);
-            if(b&&b.size<file.size) res({name:file.name.replace(/\.[^.]+$/,"")+".jpg",blob:b,orig:file.size});
+            var relayCanReadOriginal=/^image\/(jpeg|png|webp|heic|heif)$/i.test(file.type);
+            if(b&&(b.size<file.size||!relayCanReadOriginal)) res({name:file.name.replace(/\.[^.]+$/,"")+".jpg",blob:b,orig:file.size});
             else res({name:file.name,blob:file,orig:file.size});
           },"image/jpeg",ladder[li]);
         })();
@@ -2458,6 +2472,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       if(f.undecodable) chip.classList.add("is-warn");
       var bx=document.createElement("button"); bx.type="button"; bx.textContent="\u2715"; bx.setAttribute("aria-label","Remove "+f.name);
       bx.addEventListener("click",function(){
+        if(submitting) return;
         var i=FILES.indexOf(f); if(i<0) return;
         if(f.thumb) URL.revokeObjectURL(f.thumb);
         if(f.loading) f.cancelled=true;
@@ -2468,7 +2483,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
     });
     /* never let anyone leave this step mid-compression: the photo would not be
        in FILES yet and would silently never reach the pharmacy */
-    toStep3.disabled = pending>0 || FILES.length===0 || totalBytes()>MAX_TOTAL;
+    toStep3.disabled = submitting || pending>0 || FILES.length===0 || totalBytes()>MAX_TOTAL;
     var over=totalBytes()>MAX_TOTAL;
     if(pending>0) fileCount.textContent="Optimising "+pending+" photo"+(pending>1?"s":"")+"… hang on";
     else if(over) fileCount.textContent="These add up to "+fmtMB(totalBytes())+" — too big to email. Remove one and try again.";
@@ -2478,6 +2493,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
   }
 
   function addFiles(list){
+    if(submitting) return;
     /* Reserve each entry's slot BEFORE compressing. Compression finishes out of
        order, so pushing on completion shuffled the pages of a multi-page script;
        the pharmacy then had to work out which photo was page 1. */
@@ -2488,7 +2504,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       FILES.push(entry); pending++; renderFiles();
       compressImage(file).then(function(f){
         pending--;
-        if(entry.cancelled) return;
+        if(entry.cancelled){ renderFiles(); return; }
         entry.name=f.name; entry.blob=f.blob; entry.orig=f.orig; entry.loading=false;
         entry.undecodable=!!f.undecodable;
         renderFiles();
@@ -2505,8 +2521,8 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
   }
 
   fileInput.addEventListener("change",function(){ addFiles(fileInput.files); fileInput.value=""; });
-  drop.addEventListener("click",function(e){ if(e.target.closest("button")) return; fileInput.click(); });
-  drop.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); fileInput.click(); } });
+  drop.addEventListener("click",function(e){ if(submitting||e.target.closest("button")) return; fileInput.click(); });
+  drop.addEventListener("keydown",function(e){ if(submitting) return; if(e.key==="Enter"||e.key===" "){ e.preventDefault(); fileInput.click(); } });
   document.getElementById("browseBtn").addEventListener("click",function(){ fileInput.click(); });
   var camInput=document.getElementById("camInput"), camBtn=document.getElementById("camBtn");
   if(camBtn&&camInput){
@@ -2536,13 +2552,14 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       signed=false, drawing=false;
   sctx.lineWidth=3.2; sctx.lineCap="round"; sctx.lineJoin="round"; sctx.strokeStyle="#12295F";
   function sigPos(e){ var r=sig.getBoundingClientRect(); return {x:(e.clientX-r.left)*sig.width/r.width, y:(e.clientY-r.top)*sig.height/r.height}; }
-  function clearSig(){ sctx.clearRect(0,0,sig.width,sig.height); signed=false; sigHint.style.opacity="1"; checkC(); }
+  function clearSig(){ if(submitting) return; sctx.clearRect(0,0,sig.width,sig.height); signed=false; sigHint.style.opacity="1"; checkC(); }
   sig.addEventListener("pointerdown",function(e){
+    if(submitting) return;
     e.preventDefault(); sig.setPointerCapture(e.pointerId); drawing=true;
     var p=sigPos(e); sctx.beginPath(); sctx.moveTo(p.x,p.y); sctx.lineTo(p.x+.2,p.y+.2); sctx.stroke();
     signed=true; sigHint.style.opacity="0"; checkC();
   });
-  sig.addEventListener("pointermove",function(e){ if(!drawing) return; e.preventDefault(); var p=sigPos(e); sctx.lineTo(p.x,p.y); sctx.stroke(); });
+  sig.addEventListener("pointermove",function(e){ if(submitting||!drawing) return; e.preventDefault(); var p=sigPos(e); sctx.lineTo(p.x,p.y); sctx.stroke(); });
   ["pointerup","pointercancel","pointerleave"].forEach(function(ev){ sig.addEventListener(ev,function(){ drawing=false; }); });
   document.getElementById("sigClear").addEventListener("click",clearSig);
   consentBox.addEventListener("change",checkC);
@@ -2554,22 +2571,73 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
   function checkC(){
     var okContact=validContact(cEmail.value);
     cEmail.classList.toggle("bad", cEmail.value.trim().length>3 && !okContact);
-    submitWiz.disabled=!(cName.value.trim().length>1 && okContact && signed && consentBox.checked);
+    submitWiz.disabled=submitting || !(cName.value.trim().length>1 && okContact && signed && consentBox.checked);
   }
   cName.addEventListener("input",checkC);
   cEmail.addEventListener("input",checkC);
 
+  function setSubmitting(active){
+    if(submitting===active) return;
+    submitting=active;
+    wiz.setAttribute("aria-busy",active?"true":"false");
+    sig.setAttribute("aria-disabled",active?"true":"false");
+    drop.setAttribute("aria-disabled",active?"true":"false");
+    sig.style.pointerEvents=active?"none":"";
+    if(active){
+      drawing=false;
+      lockedControls=[];
+      wiz.querySelectorAll("button,input,select,textarea").forEach(function(el){
+        lockedControls.push({el:el,disabled:el.disabled}); el.disabled=true;
+      });
+    } else {
+      lockedControls.forEach(function(item){ item.el.disabled=item.disabled; });
+      lockedControls=[]; paint(); renderFiles(); checkC();
+    }
+  }
+  function makeSubmissionId(){
+    if(typeof crypto.randomUUID==="function") return crypto.randomUUID();
+    var bytes=new Uint8Array(16); crypto.getRandomValues(bytes);
+    bytes[6]=(bytes[6]&15)|64; bytes[8]=(bytes[8]&63)|128;
+    var hex=Array.prototype.map.call(bytes,function(n){ return n.toString(16).padStart(2,"0"); }).join("");
+    return hex.slice(0,8)+"-"+hex.slice(8,12)+"-"+hex.slice(12,16)+"-"+hex.slice(16,20)+"-"+hex.slice(20);
+  }
+  function makeReference(d){
+    var pad=function(n){ return String(n).padStart(2,"0"); }, bytes=new Uint8Array(4), alphabet="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    crypto.getRandomValues(bytes);
+    return "MDB-"+String(d.getFullYear()).slice(2)+pad(d.getMonth()+1)+pad(d.getDate())+"-"+
+      Array.prototype.map.call(bytes,function(n){ return alphabet.charAt(n%alphabet.length); }).join("");
+  }
+  function blobBytes(blob){
+    if(typeof blob.arrayBuffer==="function") return blob.arrayBuffer();
+    return new Promise(function(resolve,reject){
+      var reader=new FileReader(); reader.onload=function(){ resolve(reader.result); }; reader.onerror=reject; reader.readAsArrayBuffer(blob);
+    });
+  }
+  function fingerprintSubmission(snapshot){
+    var attachments=snapshot.photos.concat([{name:"signature.png",blob:snapshot.signature}]);
+    return Promise.all(attachments.map(function(f){
+      return blobBytes(f.blob).then(function(bytes){ return crypto.subtle.digest("SHA-256",bytes); }).then(function(digest){
+        return {name:f.name,type:f.blob.type,size:f.blob.size,sha256:Array.prototype.map.call(new Uint8Array(digest),function(n){ return n.toString(16).padStart(2,"0"); }).join("")};
+      });
+    })).then(function(files){
+      return JSON.stringify({clinic:snapshot.clinic,postcode:snapshot.postcode,pharmacy:snapshot.pharmacy,
+        items:snapshot.items,contactName:snapshot.contactName,contact:snapshot.contact,files:files});
+    });
+  }
+
   submitWiz.addEventListener("click",function(){
-    var d=new Date(),
-        pad=function(x){ return String(x).padStart(2,"0"); },
-        ymd=String(d.getFullYear()).slice(2)+pad(d.getMonth()+1)+pad(d.getDate()),
-        ref="MDB-"+ymd+"-"+Math.random().toString(36).slice(2,6).toUpperCase(),
-        key=routedKey||"national",
-        to=emailFor(key),
-        err=document.getElementById("sendErr"),
+    if(submitting) return;
+    checkC(); if(submitWiz.disabled) return;
+    var key=routedKey||"national", err=document.getElementById("sendErr"),
         sel=document.querySelector(".count-chip.sel");
     err.classList.remove("on");
     var rescueBox=document.getElementById("rescue"); if(rescueBox) rescueBox.classList.remove("on");
+    if(/^(mydrsbag\.com\.au|www\.mydrsbag\.com\.au|namtrantrandinh-sys\.github\.io)$/.test(location.hostname) &&
+       (location.protocol!=="https:" || window.isSecureContext===false)){
+      err.classList.add("on");
+      err.innerHTML='<b>A secure connection is required.</b> <a href="https://mydrsbag.com.au/#upload">Open the HTTPS website</a> before uploading a prescription. Nothing was sent.';
+      return;
+    }
     /* Belt and braces: never post a partial set. renderFiles already blocks
        Continue while compressing, but the user may have got here first. */
     if(pending>0){
@@ -2587,41 +2655,73 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       err.innerHTML="<b>Those photos add up to "+fmtMB(totalBytes())+".</b> That is too large to email — go back and remove one.";
       return;
     }
-    submitWiz.disabled=true; submitWiz.textContent="Sending…";
+    var snapshot={clinic:clinicName.value.trim(),postcode:pcode.value||"—",pharmacy:PHARM[key].label,
+      to:emailFor(key),items:sel?sel.textContent.trim():"Not stated",contactName:cName.value.trim(),
+      contact:cEmail.value.trim(),photos:FILES.map(function(f){ return Object.freeze({name:f.name,blob:f.blob}); })};
+    Object.freeze(snapshot.photos);
+    setSubmitting(true); submitWiz.textContent="Preparing…";
+    var preparationFailed=function(message){
+      setSubmitting(false); submitWiz.textContent="Submit script";
+      err.classList.add("on"); err.innerHTML=message;
+    };
+    try { sig.toBlob(function(b){
+      if(!b){ preparationFailed("<b>We couldn't prepare the signature.</b> Tap Clear, sign again and retry."); return; }
+      var bytes=snapshot.photos.reduce(function(total,f){ return total+f.blob.size; },b.size);
+      if(bytes>MAX_TOTAL){ preparationFailed("<b>The photos and signature total "+fmtMB(bytes)+".</b> Go back and remove one photo, then retry."); return; }
+      snapshot.signature=b; Object.freeze(snapshot); SIG_BLOB=b;
+      fingerprintSubmission(snapshot).then(function(fingerprint){
+        /* A manual retry is still the same order. Never mint another identity
+           just because a connection or acceptance reply was lost. */
+        if(lastSubmission && lastSubmission.fingerprint!==fingerprint && lastSubmission.outcome==="uncertain"){
+          var confirmed=window.confirm("The previous upload may already have reached the pharmacy. You have changed this order. Only send a new copy after the pharmacy confirms it is needed. Have you checked with the pharmacy and want to send this changed order as a new submission?");
+          if(!confirmed){
+            preparationFailed("<b>No new submission was sent.</b> The previous upload may already have been accepted. Call the pharmacy before sending a changed copy.");
+            if(rescueBox) rescueBox.classList.add("on");
+            return;
+          }
+        }
+        if(!lastSubmission || lastSubmission.fingerprint!==fingerprint){
+          var created=new Date();
+          lastSubmission={fingerprint:fingerprint,id:makeSubmissionId(),ref:makeReference(created),when:created.getTime(),outcome:"prepared"};
+        }
+        sendSnapshot(snapshot,lastSubmission);
+      })["catch"](function(){
+        preparationFailed("<b>We couldn't safely prepare this upload.</b> Please use a current browser over HTTPS, then try again. Nothing was sent.");
+      });
+    },"image/png"); } catch(e){
+      preparationFailed("<b>We couldn't prepare the signature.</b> Tap Clear, sign again and retry. Nothing was sent.");
+    }
+  });
 
+  function sendSnapshot(snapshot,identity){
+    var d=new Date(identity.when), ref=identity.ref, submissionId=identity.id, to=snapshot.to,
+        contactVal=snapshot.contact, contactIsEmail=contactVal.indexOf("@")>-1 && validContact(contactVal),
+        err=document.getElementById("sendErr");
+    identity.outcome="sending";
+    submitWiz.textContent="Sending…";
+    var authority="Confirmed and signed by "+snapshot.contactName+" for "+snapshot.clinic+" on "+d.toLocaleString("en-AU");
     var fd=new FormData();
-    fd.append("_subject","Dr's Bag script "+ref+" — "+clinicName.value.trim());
-    fd.append("_template","table");
-    fd.append("_captcha","false");
+    fd.append("submission_id",submissionId);
     fd.append("Reference",ref);
-    fd.append("Clinic",clinicName.value.trim());
-    fd.append("Postcode",pcode.value||"—");
-    fd.append("Pharmacy",PHARM[key].label);
-    fd.append("Items on script",sel?sel.textContent.trim():"Not stated");
-    fd.append("Contact name",cName.value.trim());
-    fd.append("Contact email or mobile",cEmail.value.trim());
-    fd.append("_honey","");
-    /* Give the clinic its own copy. FormSubmit's autoresponder does not run on
-       AJAX submissions, so a cc is the only way they end up holding evidence of
-       what they sent. Only valid addresses go in — the contact field also
-       accepts a mobile number. */
-    var ccList=[];
-    var contactVal=cEmail.value.trim();
-    var contactIsEmail=contactVal.indexOf("@")>-1 && validContact(contactVal);
-    if(contactIsEmail) ccList.push(contactVal);
-    if(BACKUP_INBOX) ccList.push(BACKUP_INBOX);
-    if(ccList.length) fd.append("_cc",ccList.join(","));
-    FILES.forEach(function(f,fi){ fd.append("script_photo_"+(fi+1), f.blob, f.name); });
-    fd.append("Photos attached", String(FILES.length));
-
-    fd.append("Authority to order","Confirmed and signed by "+cName.value.trim()+" for "+clinicName.value.trim()+" on "+d.toLocaleString("en-AU"));
-    /* One upload attempt over XHR (not fetch) so the phone can show real
-       progress — a 4 MB send on mobile data is otherwise a dead button. */
+    fd.append("Clinic",snapshot.clinic);
+    fd.append("Postcode",snapshot.postcode);
+    fd.append("Pharmacy",snapshot.pharmacy);
+    fd.append("Items on script",snapshot.items);
+    fd.append("Contact name",snapshot.contactName);
+    fd.append("Contact email or mobile",contactVal);
+    fd.append("Authority to order",authority);
+    fd.append("Photos attached",String(snapshot.photos.length));
+    fd.append("_honey",""); /* honeypot; a person never fills this */
+    snapshot.photos.forEach(function(f,fi){ fd.append("script_photo_"+(fi+1), f.blob, f.name); });
+    fd.append("signature",snapshot.signature,"signature-"+ref+".png");
+    /* XHR keeps real upload progress visible on mobile. A retry uses the same
+       submission ID; the Worker owns durable idempotency and will never email
+       that ID twice. */
     var attempts=0;
     var doSend=function(){
       attempts++;
       var xhr=new XMLHttpRequest();
-      xhr.open("POST","https://formsubmit.co/ajax/"+to,true);
+      xhr.open("POST",SUBMIT_ENDPOINT,true);
       xhr.setRequestHeader("Accept","application/json");
       xhr.timeout=120000;
       xhr.upload.onprogress=function(e){
@@ -2629,31 +2729,29 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
         var pc=Math.round(e.loaded/e.total*100);
         submitWiz.textContent = pc<100 ? "Sending… "+pc+"%" : "Almost there…";
       };
-      var mailtoFallback='<a href="mailto:'+to+'?subject=Dr%27s%20Bag%20script%20'+ref+
-          '" style="color:inherit"><b>'+to+'</b></a>';
       /* The relay is one service and it can refuse (or vanish) at any time. When
          it does, the clinic must still be able to get the script to the pharmacy,
          so hand the actual photos back to them: Web Share puts them straight into
          the phone's mail app, download saves them on a desktop. Nothing is lost. */
       var buildFiles=function(){
         var out=[];
-        FILES.forEach(function(f,i){
+        snapshot.photos.forEach(function(f,i){
           if(!f.blob) return;
           var nm=ref+"-"+(i+1)+"-"+f.name;
           try { out.push(new File([f.blob],nm,{type:f.blob.type||"image/jpeg"})); }
           catch(e){ /* older browsers: File constructor unavailable */ }
         });
-        if(SIG_BLOB){ try{ out.push(new File([SIG_BLOB],ref+"-signature.png",{type:"image/png"})); }catch(e){} }
+        try{ out.push(new File([snapshot.signature],ref+"-signature.png",{type:"image/png"})); }catch(e){}
         return out;
       };
       var summaryText=function(){
         return "Dr's Bag script "+ref+"\n"+
-               "Clinic: "+(clinicName.value.trim()||"—")+"\n"+
-               "Postcode: "+(pcode.value||"—")+"\n"+
-               "Pharmacy: "+PHARM[key].label+"\n"+
-               "Contact: "+(cName.value.trim()||"—")+" ("+(cEmail.value.trim()||"—")+")\n"+
-               "Items: "+(sel?sel.textContent.trim():"Not stated")+"\n"+
-               "Authorised and signed by "+(cName.value.trim()||"—")+" on "+d.toLocaleString("en-AU");
+               "Clinic: "+snapshot.clinic+"\n"+
+               "Postcode: "+snapshot.postcode+"\n"+
+               "Pharmacy: "+snapshot.pharmacy+"\n"+
+               "Contact: "+snapshot.contactName+" ("+snapshot.contact+")\n"+
+               "Items: "+snapshot.items+"\n"+
+               "Authorised and signed by "+snapshot.contactName+" on "+d.toLocaleString("en-AU");
       };
       var wireRescue=function(){
         var rr=document.getElementById("rescueRef"); if(rr) rr.textContent=ref;
@@ -2663,7 +2761,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
             box=document.getElementById("rescue");
         if(!box) return;
         box.classList.add("on");
-        if(ml) ml.href="mailto:"+to+"?subject="+encodeURIComponent("Dr's Bag script "+ref+" — "+(clinicName.value.trim()||""))+
+        if(ml) ml.href="mailto:"+to+"?subject="+encodeURIComponent("Dr's Bag script "+ref+" — "+snapshot.clinic)+
                        "&body="+encodeURIComponent(summaryText()+"\n\n(Please find the script photo attached.)");
         var files=buildFiles();
         var canShare=!!(navigator.share&&navigator.canShare&&files.length&&navigator.canShare({files:files}));
@@ -2691,41 +2789,42 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
         };
       };
       var fail=function(reason,detail){
-        /* "notdelivered" means the relay answered but told us it will NOT send
-           the mail — retrying cannot fix that, so go straight to the message. */
-        if(reason!=="notdelivered" && attempts<2){ submitWiz.textContent="Retrying…"; setTimeout(doSend,1200); return; }
-        submitWiz.disabled=false; submitWiz.textContent="Submit script";
+        /* Retry only transport ambiguity. The same submission ID makes the
+           retry idempotent at the Worker, so it cannot create a second email. */
+        if(reason==="network" && attempts<2){ submitWiz.textContent="Retrying…"; setTimeout(doSend,1200); return; }
+        identity.outcome=reason==="rejected"?"rejected":"uncertain";
+        setSubmitting(false); submitWiz.textContent="Submit script";
         err.classList.add("on");
-        if(reason==="notdelivered"){
+        if(reason==="rejected"){
           err.innerHTML='<b>This script was NOT sent.</b> The mail service refused to deliver it'+
-            (detail?' — <i>'+detail+'</i>':'')+'. Nothing you did is wrong, and nothing is lost — '+
+            (detail?' — <i>'+escHtml(detail)+'</i>':'')+'. Nothing you did is wrong, and nothing is lost — '+
             'send it across yourself below, then let the pharmacy know the website form needs attention.';
         } else {
-          err.innerHTML='<b>We couldn&#39;t send that just now.</b> Your connection may have dropped '+
-            'mid-upload. Tap <b>Submit script</b> to try again, or send it yourself below.';
+          err.innerHTML='<b>We couldn&#39;t confirm that the mail service accepted this script.</b> '+
+            (detail?'<i>'+escHtml(detail)+'</i> ':'')+
+            'Retrying this unchanged upload keeps the same reference and cannot create another automated email. Call the pharmacy before sending a changed copy or using the email options below.';
         }
         wireRescue();
       };
       xhr.onload=function(){
-        if(xhr.status<200||xhr.status>=300){ fail("http"); return; }
-        /* A 200 is not delivery. FormSubmit answers 200 while refusing to send —
-           most often because the recipient address has never been activated, in
-           which case it replies asking for the confirmation link to be clicked.
-           Showing "SCRIPT RECEIVED" on those responses loses the script silently. */
-        var body=null;
-        try { body=JSON.parse(xhr.responseText||"{}"); } catch(e){ body=null; }
-        if(body){
-          var okFlag=body.success;
-          var msg=String(body.message||body.error||"");
-          /* Only an unambiguous "no" stops us. An unrecognised shape is treated
-             as sent — a false alarm here means the clinic emails a duplicate. */
-          var explicitNo=(okFlag===false||okFlag==="false"||okFlag===0||okFlag==="0");
-          var needsActivation=/activat|confirm(ing)? your email|verify your email|not (yet )?confirmed/i.test(msg);
-          if(explicitNo||needsActivation){ fail("notdelivered",msg.slice(0,180)); return; }
+        var reply=null;
+        try { reply=JSON.parse(xhr.responseText||""); } catch(e){ reply=null; }
+        var detail=reply&&String(reply.message||reply.code||"").slice(0,180);
+        var jsonType=/^application\/json\b/i.test(xhr.getResponseHeader("Content-Type")||"");
+        if(xhr.status!==202){
+          var definitiveRefusal=xhr.status===502 && jsonType && reply && reply.ok===false &&
+            reply.status==="rejected" && reply.code==="mail_not_accepted";
+          fail(definitiveRefusal?"rejected":"uncertain",detail); return;
         }
+        var accepted=!!(jsonType && reply && reply.ok===true && reply.status==="accepted" &&
+          reply.submissionId===submissionId && reply.reference===ref &&
+          reply.provider==="smtp2go" && typeof reply.messageId==="string" && reply.messageId.length>8 &&
+          reply.photoCount===snapshot.photos.length && reply.attachmentCount===snapshot.photos.length+1 &&
+          reply.recipientCount===1 && reply.backupAccepted===false);
+        if(!accepted){ fail("uncertain","The reply did not contain a complete acceptance receipt."); return; }
         var setTxt=function(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; };
         setTxt("refCode",ref);
-        setTxt("successPharm",PHARM[key].label);
+        setTxt("successPharm",snapshot.pharmacy);
         setTxt("successEmail",to);
         setTxt("tNow",d.toLocaleDateString("en-AU",{weekday:"short",day:"numeric",month:"short"}));
 
@@ -2734,40 +2833,40 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
         var whenTxt=d.toLocaleString("en-AU",{weekday:"short",day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit"});
         setTxt("rcRef",ref);
         setTxt("rcWhen",whenTxt);
-        setTxt("rcClinic",clinicName.value.trim()||"—");
-        setTxt("rcPost",pcode.value||"—");
-        setTxt("rcPharm",PHARM[key].label);
-        setTxt("rcPhotos",FILES.length+(FILES.length===1?" photo":" photos")+" + signature");
-        setTxt("rcSigner",cName.value.trim()||"—");
-        setTxt("rcCopy",contactIsEmail?contactVal:"Not emailed — you gave a phone number");
+        setTxt("rcClinic",snapshot.clinic);
+        setTxt("rcPost",snapshot.postcode);
+        setTxt("rcPharm",snapshot.pharmacy);
+        setTxt("rcPhotos",snapshot.photos.length+(snapshot.photos.length===1?" photo":" photos")+" + signature");
+        setTxt("rcSigner",snapshot.contactName);
+        setTxt("rcCopy",reply.clinicReceiptAccepted===true&&contactIsEmail?contactVal:"Not emailed — save or print this receipt");
+        setTxt("rcMail",reply.messageId);
 
         setTxt("fbBy",nextBusinessDay(d));
         var fbe=document.getElementById("fbEmail");
         if(fbe){
-          var body="Following up on a Dr's Bag script submitted through mydrsbag.com.au.\n\n"+
+          var followupBody="Following up on a Dr's Bag script submitted through mydrsbag.com.au.\n\n"+
                    "Reference: "+ref+"\n"+
-                   "Clinic: "+(clinicName.value.trim()||"—")+"\n"+
-                   "Postcode: "+(pcode.value||"—")+"\n"+
+                   "Mail tracking ID: "+reply.messageId+"\n"+
+                   "Clinic: "+snapshot.clinic+"\n"+
+                   "Postcode: "+snapshot.postcode+"\n"+
                    "Submitted: "+whenTxt+"\n"+
-                   "Contact: "+(cName.value.trim()||"—")+" ("+(contactVal||"—")+")\n"+
-                   "Photos sent: "+FILES.length+"\n\n"+
+                   "Contact: "+snapshot.contactName+" ("+contactVal+")\n"+
+                   "Photos sent: "+snapshot.photos.length+"\n\n"+
                    "Could you confirm this has been received? Thanks.";
           fbe.href="mailto:"+to+"?subject="+encodeURIComponent("Following up — Dr's Bag script "+ref)+
-                   "&body="+encodeURIComponent(body);
+                   "&body="+encodeURIComponent(followupBody);
         }
 
-        submitWiz.disabled=false; submitWiz.textContent="Submit script";
+        identity.outcome="accepted";
+        setSubmitting(false); submitWiz.textContent="Submit script";
         show(4);
       };
-      xhr.onerror=function(){ fail("net"); };
-      xhr.ontimeout=function(){ fail("timeout"); };
+      xhr.onerror=function(){ fail("network"); };
+      xhr.ontimeout=function(){ fail("network"); };
       xhr.send(fd);
     };
-    sig.toBlob(function(b){
-      if(b){ fd.append("signature", b, "signature-"+ref+".png"); SIG_BLOB=b; }
-      doSend();
-    },"image/png");
-  });
+    doSend();
+  }
 
   /* ---- receipt helpers ---- */
   function nextBusinessDay(from){
@@ -2783,9 +2882,10 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
     b.addEventListener("click",function(){ show(+b.dataset.back); });
   });
   document.getElementById("restartWiz").addEventListener("click",function(){
+    if(submitting) return;
     document.getElementById("sendErr").classList.remove("on");
     var rb=document.getElementById("rescue"); if(rb) rb.classList.remove("on");
-    SIG_BLOB=null;
+    SIG_BLOB=null; lastSubmission=null;
     resetFiles(); clearSig(); consentBox.checked=false;
     cName.value=""; cEmail.value=""; submitWiz.disabled=true;
     show(1);
@@ -2854,6 +2954,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       warn=document.getElementById("wizWarn");
   chips.forEach(function(c){
     c.addEventListener("click",function(){
+      if(c.disabled) return;
       chips.forEach(function(o){ o.classList.remove("sel"); });
       c.classList.add("sel");
       var few=c.dataset.count==="few";
