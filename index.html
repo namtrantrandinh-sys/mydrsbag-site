@@ -415,6 +415,7 @@ details[open] summary .plus{transform:rotate(45deg);background:var(--mint)}
 .contact-card .row svg{width:18px;height:18px;color:var(--navy);flex:none}
 .contact-card .row b{font-size:14.5px;display:block}
 .contact-card .row span{font-family:var(--font-mono);font-size:12.5px;color:var(--ink-soft)}
+.contact-card .row a{font-family:var(--font-mono);font-size:12.5px;color:var(--navy);text-decoration:underline;text-underline-offset:2px}
 footer{background:var(--ink);color:#A9B6D6;padding:56px 0 40px;font-size:13.5px}
 .foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:44px;margin-bottom:44px}
 .foot-grid h4{font-family:var(--font-mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#9DB4F0;margin-bottom:16px;font-weight:600}
@@ -1128,8 +1129,8 @@ footer{padding:76px 0 48px;font-size:13.5px}
 .hero.offstage .van,.hero.offstage .orb{animation-play-state:paused}
 
 /* multi-file chips */
-.file-list{display:grid;gap:10px;margin-top:16px}
-.fchip{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.68);
+.file-list{display:grid;grid-template-columns:minmax(0,1fr);min-width:0;gap:10px;margin-top:16px}
+.fchip{display:flex;align-items:center;gap:12px;min-width:0;max-width:100%;background:rgba(255,255,255,.68);
   border:1px solid rgba(255,255,255,.9);border-radius:12px;padding:10px 12px;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 6px 16px -10px rgba(15,30,69,.25)}
 .fchip img{width:44px;height:44px;object-fit:cover;border-radius:9px;border:1px solid #D9E1F2;flex:none}
@@ -1616,6 +1617,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
 .fchip.is-loading{opacity:.7}
 .fchip.is-loading .fs{color:var(--navy);font-weight:600}
 .file-count.is-over{color:#B31E24;font-weight:600}
+#fileNotice:empty{display:none}
 .field input.bad{border-color:#E4A0A4}
 .field input.bad:focus{box-shadow:0 0 0 4px rgba(179,30,36,.14)}
 
@@ -1717,7 +1719,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       </div>
       <div class="cta-note">Free for clinics · PBS-covered · sends straight to the pharmacy</div>
       <div class="chips" role="list">
-        <span class="chip" role="listitem"><i></i>100+ PBS-licensed pharmacies</span>
+        <span class="chip" role="listitem"><i></i>Dispensed by DCO Delacombe</span>
         <span class="chip" role="listitem"><i></i>Next-day metro delivery</span>
         <span class="chip" role="listitem"><i></i>$0 to clinics</span>
         <span class="chip" role="listitem"><i></i>No sign-up required</span>
@@ -1853,7 +1855,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
     <div class="sec-head center rv">
       <span class="eyebrow">Upload in under a minute</span>
       <h2 class="display">Three fields. One photo. Done.</h2>
-      <p class="lede">No account, no cart, no checkout. Tell us where you are, attach the script, and the nearest pharmacy takes it from there.</p>
+      <p class="lede">No account, no cart, no checkout. Tell us where you are, attach the script, and DCO Delacombe takes it from there.</p>
     </div>
 
     <div class="wizard rv" id="wizard">
@@ -1964,6 +1966,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
           </div>
           <div class="file-list" id="fileList" aria-live="polite"></div>
           <div class="file-count" id="fileCount" aria-live="polite"></div>
+          <div class="file-count is-over" id="fileNotice" role="alert"></div>
           <div class="wiz-foot">
             <button class="btn btn-ghost" data-back="1">Back</button>
             <button class="btn btn-primary" id="toStep3" disabled>Continue</button>
@@ -2060,7 +2063,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
 
       </div>
     </div>
-    <p class="wiz-plain rv">Your script goes straight to your chosen pharmacy, with the photo attached — the team confirms once it's in. Prefer to email or fax it yourself? Contact details are at the bottom of the page.</p>
+    <p class="wiz-plain rv">Your script goes to DCO Delacombe with the photo attached — the team confirms once it's in. Prefer to email or fax it yourself? Contact details are at the bottom of the page.</p>
   </div>
 </section>
 
@@ -2109,7 +2112,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       <div class="pb-shade"></div>
       <div class="pb-body">
         <span class="eyebrow">Built for clinics</span>
-        <h2 class="display">Dedicated to doctors &amp; nurses — with 100+ PBS pharmacies behind you.</h2>
+        <h2 class="display">Dedicated to doctors &amp; nurses — with DCO Delacombe behind you.</h2>
         <a href="#upload" class="btn btn-primary">Upload your script</a>
       </div>
     </div>
@@ -2122,10 +2125,10 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
     <div class="sec-head center rv">
       <span class="eyebrow">Coverage</span>
       <h2 class="display" style="color:#fff">Hand-delivered locally.<br>Express-posted everywhere else.</h2>
-      <p class="lede">Pick the pharmacy nearest your clinic for the fastest turnaround — or just upload, and we'll route it for you.</p>
+      <p class="lede">Enter your postcode to see whether DCO Delacombe can hand-deliver locally or send your order by Express Post.</p>
     </div>
     <div class="map-row rv">
-      <div id="auMap" role="img" aria-label="Map of Australia showing three Victorian pharmacies with hand delivery and Express Post everywhere else"></div>
+      <div id="auMap" role="img" aria-label="Map of Australia showing hand delivery around Ballarat and Express Post elsewhere"></div>
       <div>
         <ul class="map-legend">
           <li><span class="lg-dot y"></span><span><b>Hand delivery — Ballarat &amp; district</b>DCO Delacombe delivers to local clinics itself, typically next business day.</span></li>
@@ -2150,7 +2153,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
     <div class="deliv-note rv">
       <span><b>Metro</b> — next business day</span>
       <span><b>Interstate / regional</b> — up to 3 business days</span>
-      <span><b>Network</b> — 100+ PBS-licensed DCO pharmacies</span>
+      <span><b>Dispensing pharmacy</b> — DCO Delacombe</span>
     </div>
   </div>
 </section>
@@ -2160,8 +2163,8 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
   <div class="wrap">
     <div class="sec-head center rv">
       <span class="eyebrow">What's covered</span>
-      <h2 class="display">Every item on the PBS prescriber bag list.</h2>
-      <p class="lede">The emergency medicines the PBS supplies to prescribers at no charge — stocked through Australia's largest pharmaceutical suppliers.</p>
+      <h2 class="display">Examples from the PBS prescriber bag list.</h2>
+      <p class="lede">Browse common items below. Check the official PBS list for all current medicines and quantity limits.</p>
     </div>
   </div>
   <div class="wrap">
@@ -2174,10 +2177,10 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
     </div>
     <div class="med-grid rv" id="medGrid"></div>
     <div class="med-count" id="medCount"></div>
-    <div class="med-empty" id="medEmpty" hidden>No matches here — the full PBS list has every item.</div>
+    <div class="med-empty" id="medEmpty" hidden>No matches in these examples — check the full PBS list for every item.</div>
     <div class="tape-cta rv">
       <a class="btn-arrow primary" href="https://www.pbs.gov.au/browse/doctorsbag" target="_blank" rel="noopener"><span>Full PBS Dr's Bag list</span><span class="ba-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
-      <a class="btn-arrow" href="https://www.servicesaustralia.gov.au/pb157" target="_blank" rel="noopener"><span>Order a script book (PB157)</span><span class="ba-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+      <a class="btn-arrow" href="https://www.servicesaustralia.gov.au/pb157" target="_blank" rel="noopener"><span>Request an order book (PB157 form)</span><span class="ba-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
       <span class="fine">Both links open the official Australian Government pages.</span>
     </div>
   </div>
@@ -2231,7 +2234,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       <h2 class="display" style="margin:16px 0 14px">Prefer to talk to a pharmacist?</h2>
       <p class="lede">Call, email or fax the dispensing pharmacy directly — especially if you need stock urgently today.</p>
       <div class="hero-ctas" style="margin-top:26px">
-        <a href="tel:0353358388" class="btn btn-primary">Call (03) 5335 8388</a>
+        <a href="tel:+61353358388" class="btn btn-primary">Call (03) 5335 8388</a>
         <a href="#upload" class="btn btn-ghost">Upload instead</a>
       </div>
     </div>
@@ -2242,11 +2245,11 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       </div>
       <div class="row">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z" opacity="0"/><path d="m4 7 8 6 8-6"/><rect x="4" y="5" width="16" height="14" rx="2"/></svg>
-        <div><b>Email a script</b><span>delacombe@directchemistoutlet.com.au</span></div>
+        <div><b>Email a script</b><a href="mailto:delacombe@directchemistoutlet.com.au">delacombe@directchemistoutlet.com.au</a></div>
       </div>
       <div class="row">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 17v4h12v-4"/></svg>
-        <div><b>Fax</b><span>(03) 5339 8798 · Phone (03) 5335 8388</span></div>
+        <div><b>Fax</b><span>(03) 5339 8798 · Phone <a href="tel:+61353358388">(03) 5335 8388</a></span></div>
       </div>
     </div>
   </div>
@@ -2277,7 +2280,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
         <h4>Official resources</h4>
         <ul>
           <li><a href="https://www.pbs.gov.au/browse/doctorsbag" target="_blank" rel="noopener">PBS Dr's Bag drug list ↗</a></li>
-          <li><a href="https://www.servicesaustralia.gov.au/pb157" target="_blank" rel="noopener">Order Dr's Bag book (PB157) ↗</a></li>
+          <li><a href="https://www.servicesaustralia.gov.au/pb157" target="_blank" rel="noopener">Request Dr's Bag book (PB157 form) ↗</a></li>
           <li><a href="#contact">Contact the pharmacy</a></li>
         </ul>
       </div>
@@ -2423,13 +2426,26 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
       fileList=document.getElementById("fileList"),
       toStep3=document.getElementById("toStep3"),
       FILES=[], MAXF=4, pending=0,
-      fileCount=document.getElementById("fileCount");
+      fileCount=document.getElementById("fileCount"),
+      fileNotice=document.getElementById("fileNotice");
   /* Keep the complete raw attachment set below 5 MiB so base64 expansion and
      message text remain comfortably inside the provider's 10 MiB limit. */
   var MAX_TOTAL=4.75*1024*1024, PER_FILE_TARGET=1*1024*1024;
   function totalBytes(){ var t=0; FILES.forEach(function(f){ if(f.blob) t+=f.blob.size; }); return t; }
 
   function fmtMB(b){ return (b/1048576).toFixed(2)+" MB"; }
+  function uploadType(file){
+    var type=(file.type||"").toLowerCase();
+    if(type==="application/pdf" || type.indexOf("image/")===0) return type;
+    /* Some phone share sheets provide a filename but leave the MIME type blank. */
+    if(type) return "";
+    var ext=(file.name.split(".").pop()||"").toLowerCase();
+    return {jpg:"image/jpeg",jpeg:"image/jpeg",png:"image/png",webp:"image/webp",
+      heic:"image/heic",heif:"image/heif",gif:"image/gif",avif:"image/avif",pdf:"application/pdf"}[ext]||"";
+  }
+  function showFileNotice(message){
+    fileNotice.textContent=message;
+  }
   function escHtml(v){
     return String(v==null?"":v).replace(/[&<>"']/g,function(ch){
       return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch];
@@ -2437,38 +2453,47 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
   }
 
   function compressImage(file){
-    return new Promise(function(res){
-      if(file.type==="application/pdf"||file.type.indexOf("image")!==0){
-        res({name:file.name,blob:file,orig:file.size}); return;
+    return new Promise(function(res,rej){
+      var type=uploadType(file);
+      var source=(file.type===type)?file:new Blob([file],{type:type});
+      if(type==="application/pdf"){
+        res({name:file.name,blob:source,orig:file.size}); return;
+      }
+      var relayCanReadOriginal=/^image\/(jpeg|png|webp|heic|heif)$/i.test(type);
+      function originalOrError(){
+        if(relayCanReadOriginal) res({name:file.name,blob:source,orig:file.size});
+        else rej(new Error("Image could not be converted to a supported photo format."));
       }
       var url=URL.createObjectURL(file), img=new Image();
       img.onload=function(){
-        var sc=Math.min(1,1600/Math.max(img.width,img.height)),
-            c=document.createElement("canvas");
-        c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
-        c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-        /* Step the quality down only if the photo is still heavy, so a normal
-           script photo keeps full legibility but a 12MP phone shot can't blow
-           the 10 MB cap the mail relay enforces. */
-        var ladder=[.82,.7,.6], li=0;
-        (function attempt(){
-          c.toBlob(function(b){
-            if(b && b.size>PER_FILE_TARGET && li<ladder.length-1){ li++; attempt(); return; }
-            URL.revokeObjectURL(url);
-            var relayCanReadOriginal=/^image\/(jpeg|png|webp|heic|heif)$/i.test(file.type);
-            if(b&&(b.size<file.size||!relayCanReadOriginal)) res({name:file.name.replace(/\.[^.]+$/,"")+".jpg",blob:b,orig:file.size});
-            else res({name:file.name,blob:file,orig:file.size});
-          },"image/jpeg",ladder[li]);
-        })();
+        try {
+          var sc=Math.min(1,1600/Math.max(img.width,img.height)),
+              c=document.createElement("canvas");
+          c.width=Math.max(1,Math.round(img.width*sc)); c.height=Math.max(1,Math.round(img.height*sc));
+          var ctx=c.getContext("2d");
+          if(!ctx) throw new Error("Canvas unavailable");
+          ctx.drawImage(img,0,0,c.width,c.height);
+          /* Step the quality down only if the photo is still heavy. */
+          var ladder=[.82,.7,.6], li=0;
+          (function attempt(){
+            try {
+              c.toBlob(function(b){
+                if(b && b.size>PER_FILE_TARGET && li<ladder.length-1){ li++; attempt(); return; }
+                URL.revokeObjectURL(url);
+                if(b&&(b.size<file.size||!relayCanReadOriginal)) res({name:file.name.replace(/\.[^.]+$/,"")+".jpg",blob:b,orig:file.size});
+                else originalOrError();
+              },"image/jpeg",ladder[li]);
+            } catch(e){ URL.revokeObjectURL(url); originalOrError(); }
+          })();
+        } catch(e){ URL.revokeObjectURL(url); originalOrError(); }
       };
       img.onerror=function(){
-        /* Usually an iPhone HEIC on a browser that cannot decode it. We still
-           send the original, but the clinic is told, because the pharmacy may
-           not be able to open it either. */
+        /* Usually an iPhone HEIC on a browser that cannot decode it. */
         URL.revokeObjectURL(url);
-        res({name:file.name,blob:file,orig:file.size,undecodable:true});
+        if(relayCanReadOriginal) res({name:file.name,blob:source,orig:file.size,undecodable:true});
+        else rej(new Error("Image could not be opened."));
       };
-      img.src=url;
+      try { img.src=url; } catch(e){ URL.revokeObjectURL(url); originalOrError(); }
     });
   }
 
@@ -2495,7 +2520,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
         if(submitting) return;
         var i=FILES.indexOf(f); if(i<0) return;
         if(f.thumb) URL.revokeObjectURL(f.thumb);
-        if(f.loading) f.cancelled=true;
+        if(f.loading){ f.cancelled=true; pending--; }
         FILES.splice(i,1); renderFiles();
       });
       chip.appendChild(im); chip.appendChild(fn); chip.appendChild(fs); chip.appendChild(bx);
@@ -2514,30 +2539,44 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
 
   function addFiles(list){
     if(submitting) return;
+    showFileNotice("");
+    var selected=[].slice.call(list), valid=[], badType=0, empty=0;
+    selected.forEach(function(file){
+      if(!file.size){ empty++; return; }
+      if(!uploadType(file)){ badType++; return; }
+      valid.push(file);
+    });
     /* Reserve each entry's slot BEFORE compressing. Compression finishes out of
        order, so pushing on completion shuffled the pages of a multi-page script;
        the pharmacy then had to work out which photo was page 1. */
     var room=MAXF-FILES.length;
-    if(room<=0){ fileCount.textContent="That's the "+MAXF+"-photo limit — remove one to add another."; return; }
-    [].slice.call(list,0,room).forEach(function(file){
+    var omitted=Math.max(0,valid.length-room), notices=[];
+    if(badType) notices.push(badType+" unsupported file"+(badType>1?"s":"")+" skipped — use photos or PDF");
+    if(empty) notices.push(empty+" empty file"+(empty>1?"s":"")+" skipped");
+    if(omitted) notices.push(omitted+" file"+(omitted>1?"s":"")+" skipped — only "+MAXF+" attachments fit; check all script pages are included");
+    if(notices.length) showFileNotice(notices.join(". ")+".");
+    valid.slice(0,Math.max(0,room)).forEach(function(file){
       var entry={name:file.name,blob:null,orig:file.size,loading:true,thumb:null,cancelled:false};
       FILES.push(entry); pending++; renderFiles();
       compressImage(file).then(function(f){
+        if(entry.cancelled) return;
         pending--;
-        if(entry.cancelled){ renderFiles(); return; }
         entry.name=f.name; entry.blob=f.blob; entry.orig=f.orig; entry.loading=false;
         entry.undecodable=!!f.undecodable;
         renderFiles();
       })["catch"](function(){
+        if(entry.cancelled) return;
         pending--;
         var i=FILES.indexOf(entry); if(i>-1) FILES.splice(i,1);
+        showFileNotice("Could not prepare "+file.name+". Try another photo or a PDF; this file was not attached.");
         renderFiles();
       });
     });
   }
   function resetFiles(){
-    FILES.forEach(function(f){ if(f.thumb) URL.revokeObjectURL(f.thumb); });
+    FILES.forEach(function(f){ if(f.thumb) URL.revokeObjectURL(f.thumb); if(f.loading) f.cancelled=true; });
     FILES=[]; pending=0; fileInput.value=""; renderFiles();
+    showFileNotice("");
   }
 
   fileInput.addEventListener("change",function(){ addFiles(fileInput.files); fileInput.value=""; });
@@ -3117,18 +3156,18 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
     var MEDS=[
       {n:"Adrenaline (epinephrine) 1:1000",f:"Injection · ampoule",c:"allergy"},
       {n:"Hydrocortisone",f:"Injection · vial",c:"allergy"},
-      {n:"Promethazine",f:"Injection · ampoule",c:"allergy"},
+      {n:"Salbutamol",f:"Inhaler",c:"allergy"},
       {n:"Atropine sulfate",f:"Injection · ampoule",c:"cardiac"},
       {n:"Glyceryl trinitrate",f:"Sublingual spray",c:"cardiac"},
-      {n:"Diazepam",f:"Injection · ampoule",c:"neuro"},
+      {n:"Midazolam",f:"Injection · ampoule",c:"neuro"},
       {n:"Haloperidol",f:"Injection · ampoule",c:"neuro"},
       {n:"Benzatropine",f:"Injection · ampoule",c:"neuro"},
       {n:"Glucagon",f:"Injection · kit",c:"other"},
       {n:"Naloxone",f:"Injection · ampoule",c:"other"},
       {n:"Metoclopramide",f:"Injection · ampoule",c:"other"},
-      {n:"Dexamethasone",f:"Injection · vial",c:"other"}
+      {n:"Methoxyflurane",f:"Inhalation solution",c:"other"}
     ];
-    var CATS=[["all","All"],["allergy","Allergy & anaphylaxis"],["cardiac","Cardiac"],["neuro","Sedation & neuro"],["other","Other emergencies"]];
+    var CATS=[["all","All"],["allergy","Allergy & airways"],["cardiac","Cardiac"],["neuro","Sedation & neuro"],["other","Other emergencies"]];
     var CATLBL={}; CATS.forEach(function(c){CATLBL[c[0]]=c[1];});
     var medFilters=document.getElementById("medFilters"),
         medSearch=document.getElementById("medSearch"),
@@ -3164,7 +3203,7 @@ footer{content-visibility:auto;contain-intrinsic-size:auto 420px}
                 (!q || card.querySelector("b").textContent.toLowerCase().indexOf(q)>-1);
         card.hidden=!hit; if(hit) shown++;
       });
-      medCount.textContent=shown+" of "+MEDS.length+" medicines";
+      medCount.textContent=shown+" of "+MEDS.length+" examples";
       medEmpty.hidden=shown!==0;
     }
     medSearch.addEventListener("input",medFilter);
