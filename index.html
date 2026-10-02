@@ -1127,6 +1127,9 @@ footer{padding:76px 0 48px;font-size:13.5px}
 /* everything sleeps when the hero leaves the screen */
 .hero.offstage .script-stage,.hero.offstage .phone,.hero.offstage .sat,
 .hero.offstage .van,.hero.offstage .orb{animation-play-state:paused}
+/* The nested scan, checks, road and status animations otherwise continue to
+   run underneath paused parents after the hero has left the viewport. */
+.hero.offstage *,.hero.offstage *::before,.hero.offstage *::after{animation-play-state:paused !important}
 
 /* multi-file chips */
 .file-list{display:grid;grid-template-columns:minmax(0,1fr);min-width:0;gap:10px;margin-top:16px}
